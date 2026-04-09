@@ -3,17 +3,22 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
+    "android:dev": "adb uninstall kr.nana.trace.app; react-native run-android --mode developmentDebug",
+    "android:prod": "adb uninstall kr.nana.trace.app; react-native run-android --mode productionRelease",
+    "ios:dev": "react-native run-ios --scheme development",
+    "ios:prod": "react-native run-ios --scheme production",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
   },
   "dependencies": {
+    "@packagekr/kakao-login": "file:./packages/kakao",
+    "@react-native/new-app-screen": "0.85.0",
     "react": "19.2.3",
     "react-native": "0.85.0",
-    "@react-native/new-app-screen": "0.85.0",
-    "react-native-safe-area-context": "^5.5.2"
+    "react-native-config": "^1.6.1",
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-svg": "^15.15.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
