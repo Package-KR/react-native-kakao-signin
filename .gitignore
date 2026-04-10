@@ -21,6 +21,8 @@ DerivedData
 *.ipa
 *.xcuserstate
 **/.xcode.env.local
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
 
 # Android/IntelliJ
 #
@@ -74,8 +76,19 @@ yarn-error.log
 !.yarn/sdks
 !.yarn/versions
 
-# example
-/example/
+# example app
+/KakaoLoginExample/.env
+/KakaoLoginExample/node_modules/
+/KakaoLoginExample/android/.gradle/
+/KakaoLoginExample/android/app/build/
+/KakaoLoginExample/android/build/
+/KakaoLoginExample/ios/build/
+/KakaoLoginExample/ios/Pods/
+/KakaoLoginExample/env/.env.development
+/KakaoLoginExample/env/.env.production
+
+# references
+references/
 
 # AI
 CLAUDE.md
