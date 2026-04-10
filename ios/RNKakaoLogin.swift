@@ -7,95 +7,75 @@ import KakaoSDKUser
 @objc(RNKakaoLogin)
 class RNKakaoLogin: NSObject {
 
+  // SDK 초기화
   public override init() {
     let appKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String
     let customScheme = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_SCHEME") as? String
 
-    if let appKey = appKey {
-      if let customScheme = customScheme {
-        KakaoSDK.initSDK(appKey: appKey, customScheme: customScheme)
-      } else {
-        KakaoSDK.initSDK(appKey: appKey)
-      }
-    }
+    RNKakaoLogin.configureSDK(appKey: appKey, customScheme: customScheme)
 
     super.init()
   }
 
+  // 메인 큐 초기화
   @objc static func requiresMainQueueSetup() -> Bool { true }
 
-  // MARK: - URL 처리
-
+  // 카카오톡 로그인 URL 확인
   @objc(isKakaoTalkLoginUrl:)
   static func isKakaoTalkLoginUrl(_ url: URL) -> Bool {
     return AuthApi.isKakaoTalkLoginUrl(url)
   }
 
+  // 카카오톡 로그인 URL 처리
   @objc(handleOpenUrl:)
   static func handleOpenUrl(_ url: URL) -> Bool {
     return AuthController.handleOpenUrl(url: url)
   }
 
-  // MARK: - 로그인
-
+  // 카카오 로그인
   @objc(login:rejecter:)
   func login(_ resolve: @escaping RCTPromiseResolveBlock,
              rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
-      let handler: (OAuthToken?, Error?) -> Void = { token, error in
-        if let error = error { self.reject(reject, error) }
-        else { resolve(RNKakaoLoginHelper.tokenToDict(token)) }
-      }
+    runOnMain {
+      let completion = self.tokenHandler(resolve, reject)
 
       if UserApi.isKakaoTalkLoginAvailable() {
-        UserApi.shared.loginWithKakaoTalk(completion: handler)
-      } else {
-        UserApi.shared.loginWithKakaoAccount(completion: handler)
+        UserApi.shared.loginWithKakaoTalk(completion: completion)
+        return
       }
+
+      UserApi.shared.loginWithKakaoAccount(completion: completion)
     }
   }
 
+  // 카카오계정 로그인
   @objc(loginWithKakaoAccount:rejecter:)
   func loginWithKakaoAccount(_ resolve: @escaping RCTPromiseResolveBlock,
                              rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
-      UserApi.shared.loginWithKakaoAccount { token, error in
-        if let error = error { self.reject(reject, error) }
-        else { resolve(RNKakaoLoginHelper.tokenToDict(token)) }
-      }
-    }
+    runOnMain { UserApi.shared.loginWithKakaoAccount(completion: self.tokenHandler(resolve, reject)) }
   }
 
-  // MARK: - 로그아웃 / 연결 끊기
+  // 세션 처리
 
+  // 로그아웃
   @objc(logout:rejecter:)
   func logout(_ resolve: @escaping RCTPromiseResolveBlock,
               rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
-      UserApi.shared.logout { error in
-        if let error = error { self.reject(reject, error) }
-        else { resolve("Successfully logged out") }
-      }
-    }
+    runOnMain { UserApi.shared.logout(completion: self.messageHandler(resolve, reject, "Successfully logged out")) }
   }
 
+  // 연결 끊기
   @objc(unlink:rejecter:)
   func unlink(_ resolve: @escaping RCTPromiseResolveBlock,
               rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
-      UserApi.shared.unlink { error in
-        if let error = error { self.reject(reject, error) }
-        else { resolve("Successfully unlinked") }
-      }
-    }
+    runOnMain { UserApi.shared.unlink(completion: self.messageHandler(resolve, reject, "Successfully unlinked")) }
   }
 
-  // MARK: - 토큰 정보
-
+  // 토큰 정보 조회
   @objc(getAccessToken:rejecter:)
   func getAccessToken(_ resolve: @escaping RCTPromiseResolveBlock,
                       rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
+    runOnMain {
       UserApi.shared.accessTokenInfo { info, error in
         if let error = error { self.reject(reject, error) }
         else {
@@ -108,12 +88,11 @@ class RNKakaoLogin: NSObject {
     }
   }
 
-  // MARK: - 프로필
-
+  // 프로필 조회
   @objc(getProfile:rejecter:)
   func getProfile(_ resolve: @escaping RCTPromiseResolveBlock,
                   rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
+    runOnMain {
       UserApi.shared.me { user, error in
         if let error = error { self.reject(reject, error) }
         else {
@@ -149,12 +128,11 @@ class RNKakaoLogin: NSObject {
     }
   }
 
-  // MARK: - 배송지
-
+  // 배송지 조회
   @objc(shippingAddresses:rejecter:)
   func shippingAddresses(_ resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
+    runOnMain {
       let fmt = RNKakaoLoginHelper.dateFormatter
       UserApi.shared.shippingAddresses { addresses, error in
         if let error = error { self.reject(reject, error) }
@@ -182,12 +160,11 @@ class RNKakaoLogin: NSObject {
     }
   }
 
-  // MARK: - 서비스 약관
-
+  // 서비스 약관 조회
   @objc(serviceTerms:rejecter:)
   func serviceTerms(_ resolve: @escaping RCTPromiseResolveBlock,
                     rejecter reject: @escaping RCTPromiseRejectBlock) {
-    DispatchQueue.main.async {
+    runOnMain {
       let fmt = RNKakaoLoginHelper.dateFormatter
       UserApi.shared.serviceTerms { terms, error in
         if let error = error { self.reject(reject, error) }
@@ -214,8 +191,47 @@ class RNKakaoLogin: NSObject {
     }
   }
 
-  // MARK: - Private
+  // SDK 설정
+  private static func configureSDK(appKey: String?, customScheme: String?) {
+    guard let appKey = appKey else { return }
 
+    if let customScheme = customScheme {
+      KakaoSDK.initSDK(appKey: appKey, customScheme: customScheme)
+      return
+    }
+
+    KakaoSDK.initSDK(appKey: appKey)
+  }
+
+  // 메인 스레드 실행
+  private func runOnMain(_ action: @escaping () -> Void) {
+    DispatchQueue.main.async(execute: action)
+  }
+
+  // 토큰 응답 콜백
+  private func tokenHandler(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    _ reject: @escaping RCTPromiseRejectBlock
+  ) -> (OAuthToken?, Error?) -> Void {
+    return { token, error in
+      if let error = error { self.reject(reject, error) }
+      else { resolve(RNKakaoLoginHelper.tokenToDict(token)) }
+    }
+  }
+
+  // 메시지 응답 콜백
+  private func messageHandler(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    _ reject: @escaping RCTPromiseRejectBlock,
+    _ message: String
+  ) -> (Error?) -> Void {
+    return { error in
+      if let error = error { self.reject(reject, error) }
+      else { resolve(message) }
+    }
+  }
+
+  // 에러 변환
   private func reject(_ reject: RCTPromiseRejectBlock, _ error: Error) {
     let (code, message) = RNKakaoError.parse(error)
     reject(code, message, error)
