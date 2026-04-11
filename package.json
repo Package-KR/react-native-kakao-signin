@@ -1,5 +1,5 @@
 {
-  "name": "@packagekr/kakao-login",
+  "name": "@package-kr/react-native-kakao-signin",
   "version": "0.0.1",
   "description": "React Native Kakao Login",
   "main": "src/index",

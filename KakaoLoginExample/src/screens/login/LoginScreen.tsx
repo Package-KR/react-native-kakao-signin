@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { login, logout, getProfile } from '@packagekr/kakao-login';
-import type { KakaoProfile } from '@packagekr/kakao-login';
+import { login, logout, getProfile } from '@package-kr/react-native-kakao-signin';
+import type { KakaoProfile } from '@package-kr/react-native-kakao-signin';
 
 import { styles } from './login.styles';
 

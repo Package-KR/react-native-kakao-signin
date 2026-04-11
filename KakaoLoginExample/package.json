@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@packagekr/kakao-login": "file:..",
+    "@package-kr/react-native-kakao-signin": "file:..",
     "@react-native/new-app-screen": "0.85.0",
     "react": "19.2.3",
     "react-native": "0.85.0",
