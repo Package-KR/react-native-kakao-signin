@@ -22,7 +22,7 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-		<!-- Social Login -->
+	<!-- Social Login -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

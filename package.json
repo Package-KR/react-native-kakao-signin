@@ -6,7 +6,7 @@
   "types": "src/index.d.ts",
   "scripts": {
     "android": "npm run android --workspace KakaoLoginExample",
-    "ios": "npm run ios:dev --workspace KakaoLoginExample --",
+    "ios": "npm run ios --workspace KakaoLoginExample --",
     "lint": "npm run lint --workspaces --if-present",
     "start": "npm run start --workspace KakaoLoginExample",
     "test": "npm run test --workspaces --if-present"
