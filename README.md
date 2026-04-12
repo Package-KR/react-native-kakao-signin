@@ -31,7 +31,7 @@ RN Expo와 v0.68 미만은 추후 지원 예정입니다.
 npm install @package-kr/react-native-kakao-signin
 ```
 
-## iOS 🍎
+## iOS
 
 ### 1. Info.plist 설정
 
@@ -41,29 +41,29 @@ npm install @package-kr/react-native-kakao-signin
 <summary>복사용</summary>
 
 ```xml
-<key>CFBundleURLTypes</key>
-<array>
-	<dict>
-		<key>CFBundleTypeRole</key>
-		<string>Editor</string>
-		<key>CFBundleURLName</key>
-		<string>KAKAO</string>
-		<key>CFBundleURLSchemes</key>
-		<array>
-			<string>kakao{KAKAO_APP_KEY}</string>
-		</array>
-	</dict>
-</array>
-<key>CFBundleVersion</key>
-<string>$(CURRENT_PROJECT_VERSION)</string>
-<key>KAKAO_APP_KEY</key>
-<string>{KAKAO_APP_KEY}</string>
-<key>LSApplicationQueriesSchemes</key>
-<array>
-	<string>kakao{KAKAO_APP_KEY}</string>
-	<string>kakaokompassauth</string>
-	<string>kakaotalk</string>
-</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>KAKAO</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kakao{KAKAO_APP_KEY}</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>KAKAO_APP_KEY</key>
+	<string>{KAKAO_APP_KEY}</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakao{KAKAO_APP_KEY}</string>
+		<string>kakaokompassauth</string>
+		<string>kakaotalk</string>
+	</array>
 ```
 
 </details>
@@ -100,13 +100,14 @@ npm install @package-kr/react-native-kakao-signin
 cd ios && pod install
 ```
 
-## Android 🤖
+## Android
 
 ### 1. Redirect URI 설정
 
-`app/src/main/AndroidManifest.xml`에 카카오 리다이렉트 액티비티를 추가합니다. `{KAKAO_APP_KEY}` 부분을 카카오 네이티브 앱 키로 교체해주세요.
+`app/src/main/AndroidManifest.xml`에 카카오 리다이렉트 액티비티를 추가합니다.<br/>
+`{KAKAO_APP_KEY}` 부분을 카카오 네이티브 앱 키로 교체해주세요.
 
-사용자 휴대폰에 카카오 앱이 설치되어 있을 경우 로그인 후 앱으로 돌아오기 위한 설정입니다.
+사용자 휴대폰에 카카오 앱이 설치되어 있을 경우 로그인 후 앱으로 돌아오기 위한 설정입니다.<br/>
 Android 12(API 31) 이상을 타깃하는 경우 `android:exported="true"` 를 반드시 선언해주셔야 합니다.
 
 ```xml
