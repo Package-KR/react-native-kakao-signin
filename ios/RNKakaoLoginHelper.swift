@@ -16,10 +16,10 @@ enum RNKakaoSigninHelper {
     return [
       "accessToken": token.accessToken,
       "refreshToken": token.refreshToken,
-      "idToken": token.idToken ?? "",
+      "idToken": token.idToken as Any,
       "accessTokenExpiresAt": dateFormatter.string(from: token.expiredAt),
       "refreshTokenExpiresAt": dateFormatter.string(from: token.refreshTokenExpiredAt),
-      "scopes": token.scopes ?? [],
+      "scopes": token.scopes as Any,
     ]
   }
 }
