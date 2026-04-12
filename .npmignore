@@ -1,0 +1,29 @@
+# Example
+KakaoLoginExample/
+
+# Docs
+docs/
+CHANGELOG.md
+KAKAO_CONSOLE_SETUP.md
+AGENTS.md
+
+# Build
+android/build/
+ios/build/
+
+# Tests
+__tests__/
+jest.config.js
+
+# Dev
+node_modules/
+vendor/
+script/
+래퍼런스/
+
+# Config
+tsconfig.json
+.git/
+.github/
+.vscode/
+.idea/
