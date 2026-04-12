@@ -3,43 +3,109 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login, logout, getProfile } from '@package-kr/react-native-kakao-signin';
-import type { KakaoProfile } from '@package-kr/react-native-kakao-signin';
+import type { KakaoOAuthToken, KakaoProfile } from '@package-kr/react-native-kakao-signin';
 
 import { styles } from './login.styles';
 
+const TOKEN_KEY_ORDER: (keyof KakaoOAuthToken)[] = [
+  'accessToken',
+  'refreshToken',
+  'idToken',
+  'accessTokenExpiresAt',
+  'refreshTokenExpiresAt',
+  'scopes',
+];
+
+const PROFILE_KEY_ORDER: (keyof KakaoProfile)[] = [
+  'id',
+  'nickname',
+  'name',
+  'email',
+  'profileImageUrl',
+  'thumbnailImageUrl',
+  'gender',
+  'ageRange',
+  'birthday',
+  'birthdayType',
+  'birthyear',
+  'phoneNumber',
+  'isEmailValid',
+  'isEmailVerified',
+  'isKorean',
+  'hasEmail',
+  'hasPhoneNumber',
+  'hasBirthday',
+  'hasBirthyear',
+  'hasAgeRange',
+  'hasGender',
+  'isDefaultImage',
+  'isDefaultNickname',
+  'connectedAt',
+  'synchedAt',
+  'isLeapMonth',
+  'ci',
+  'ciAuthenticatedAt',
+  'emailNeedsAgreement',
+  'profileNeedsAgreement',
+  'phoneNumberNeedsAgreement',
+  'genderNeedsAgreement',
+  'ageRangeNeedsAgreement',
+  'birthdayNeedsAgreement',
+  'birthyearNeedsAgreement',
+  'isKoreanNeedsAgreement',
+  'profileNicknameNeedsAgreement',
+  'profileImageNeedsAgreement',
+  'nameNeedsAgreement',
+  'ciNeedsAgreement',
+];
+
+function sortedStringify(data: object, keyOrder: string[]): string {
+  const sorted: Record<string, any> = {};
+  for (const key of keyOrder) {
+    if (key in data) {
+      sorted[key] = (data as any)[key] ?? null;
+    }
+  }
+  // keyOrder에 없는 키는 뒤에 추가
+  for (const key of Object.keys(data)) {
+    if (!(key in sorted)) {
+      sorted[key] = (data as any)[key] ?? null;
+    }
+  }
+  return JSON.stringify(sorted, null, 2);
+}
+
 function LoginScreen() {
   const insets = useSafeAreaInsets();
-  const [profile, setProfile] = useState<KakaoProfile | null>(null);
-  const [response, setResponse] = useState<object | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [responseText, setResponseText] = useState('');
 
   const handleLogin = async () => {
     try {
       const token = await login();
-      setResponse(token);
-      const p = await getProfile();
-      setProfile(p);
+      setIsLoggedIn(true);
+      setResponseText(sortedStringify(token, TOKEN_KEY_ORDER));
     } catch (e: any) {
-      setResponse({ error: e.code, message: e.message });
+      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
     }
   };
 
   const handleGetProfile = async () => {
     try {
       const p = await getProfile();
-      setProfile(p);
-      setResponse(p);
+      setResponseText(sortedStringify(p, PROFILE_KEY_ORDER));
     } catch (e: any) {
-      setResponse({ error: e.code, message: e.message });
+      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
     }
   };
 
   const handleLogout = async () => {
     try {
       await logout();
-      setProfile(null);
-      setResponse(null);
+      setIsLoggedIn(false);
+      setResponseText('');
     } catch (e: any) {
-      setResponse({ error: e.code, message: e.message });
+      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
     }
   };
 
@@ -53,13 +119,13 @@ function LoginScreen() {
       {/* 가운데 response */}
       <View style={styles.responseBox}>
         <ScrollView>
-          <Text style={styles.responseText}>{response ? JSON.stringify(response, null, 2) : ''}</Text>
+          <Text style={styles.responseText}>{responseText}</Text>
         </ScrollView>
       </View>
 
       {/* 하단 버튼 */}
       <View style={styles.buttons}>
-        {!profile ? (
+        {!isLoggedIn ? (
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.kakaoButton} onPress={handleLogin} activeOpacity={0.8}>
               <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
