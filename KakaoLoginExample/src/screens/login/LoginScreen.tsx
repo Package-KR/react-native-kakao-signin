@@ -59,13 +59,16 @@ const PROFILE_KEY_ORDER: (keyof KakaoProfile)[] = [
   'ciNeedsAgreement',
 ];
 
+// 중요도 순서대로 키를 정렬하여 JSON 변환
 function sortedStringify(data: object, keyOrder: string[]): string {
   const sorted: Record<string, any> = {};
+  // keyOrder에 정의된 순서대로 먼저 넣고
   for (const key of keyOrder) {
     if (key in data) {
       sorted[key] = (data as any)[key] ?? null;
     }
   }
+
   // keyOrder에 없는 키는 뒤에 추가
   for (const key of Object.keys(data)) {
     if (!(key in sorted)) {
