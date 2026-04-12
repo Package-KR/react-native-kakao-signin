@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>RNSocialLogin</string>
+	<string>RNKakaoSignin</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,7 +22,6 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<!-- Social Login -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -32,18 +31,17 @@
 			<string>KAKAO</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>kakao$(KAKAO_APP_KEY)</string>
+				<string>kakaoa1b5114402b6d9a9a5da7f8264cad6e1</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<!-- Social Login -->
 	<key>KAKAO_APP_KEY</key>
-	<string>$(KAKAO_APP_KEY)</string>
+	<string>a1b5114402b6d9a9a5da7f8264cad6e1</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>kakao$(KAKAO_APP_KEY)</string>
+		<string>kakaoa1b5114402b6d9a9a5da7f8264cad6e1</string>
 		<string>kakaokompassauth</string>
 		<string>kakaolink</string>
 		<string>kakaoplus</string>

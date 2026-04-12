@@ -12,4 +12,4 @@ export interface Spec extends TurboModule {
   serviceTerms(): Promise<{ [key: string]: Object }>;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('RNKakaoLogin');
+export default TurboModuleRegistry.getEnforcing<Spec>('RNKakaoSignin');

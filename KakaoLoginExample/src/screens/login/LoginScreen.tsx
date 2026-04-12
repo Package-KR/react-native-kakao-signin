@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { login, logout, getProfile } from '@packagekr/kakao-login';
-import type { KakaoProfile } from '@packagekr/kakao-login';
+import { login, logout, getProfile } from '@package-kr/react-native-kakao-signin';
+import type { KakaoProfile } from '@package-kr/react-native-kakao-signin';
 
 import { styles } from './login.styles';
 
@@ -47,15 +47,13 @@ function LoginScreen() {
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>react-native-kakao-login</Text>
+        <Text style={styles.headerTitle}>react-native-kakao-signin</Text>
       </View>
 
       {/* 가운데 response */}
       <View style={styles.responseBox}>
         <ScrollView>
-          <Text style={styles.responseText}>
-            {response ? JSON.stringify(response, null, 2) : ''}
-          </Text>
+          <Text style={styles.responseText}>{response ? JSON.stringify(response, null, 2) : ''}</Text>
         </ScrollView>
       </View>
 

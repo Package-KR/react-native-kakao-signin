@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "RNSocialLogin",
+      withModuleName: "RNKakaoSignin",
       in: window,
       launchOptions: launchOptions
     )

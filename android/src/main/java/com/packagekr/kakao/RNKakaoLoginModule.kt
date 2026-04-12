@@ -18,13 +18,13 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-@ReactModule(name = RNKakaoLoginModule.NAME)
-class RNKakaoLoginModule(
+@ReactModule(name = RNKakaoSigninModule.NAME)
+class RNKakaoSigninModule(
     reactContext: ReactApplicationContext
 ) : NativeKakaoLoginSpec(reactContext) {
 
     companion object {
-        const val NAME = "RNKakaoLogin"
+        const val NAME = "RNKakaoSignin"
     }
 
     init {

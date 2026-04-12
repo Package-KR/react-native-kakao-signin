@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 // 카카오 로그인 URL을 체크하는 Swift 클래스
-@interface RNKakaoLogin : NSObject
+@interface RNKakaoSignin : NSObject
 + (BOOL)isKakaoTalkLoginUrl:(NSURL *)url;
 + (BOOL)handleOpenUrl:(NSURL *)url;
 @end
@@ -25,16 +25,16 @@ static BOOL RNKakaoHandleURL(NSURL *url) {
     return NO;
   }
 
-  if ([RNKakaoLogin isKakaoTalkLoginUrl:url]) {
-    return [RNKakaoLogin handleOpenUrl:url];
+  if ([RNKakaoSignin isKakaoTalkLoginUrl:url]) {
+    return [RNKakaoSignin handleOpenUrl:url];
   }
 
   return NO;
 }
 
 // openURL 복귀 처리
-static BOOL RNKakaoLogin_openURL(id self, SEL _cmd, UIApplication *app, NSURL *url, NSDictionary *options) {
-  NSLog(@"[RNKakaoLogin] openURL received: %@", url.absoluteString);
+static BOOL RNKakaoSignin_openURL(id self, SEL _cmd, UIApplication *app, NSURL *url, NSDictionary *options) {
+  NSLog(@"[RNKakaoSignin] openURL received: %@", url.absoluteString);
 
   if (RNKakaoHandleURL(url)) {
     return YES;
@@ -48,7 +48,7 @@ static BOOL RNKakaoLogin_openURL(id self, SEL _cmd, UIApplication *app, NSURL *u
 }
 
 // universal link 복귀 처리
-static BOOL RNKakaoLogin_continueUserActivity(
+static BOOL RNKakaoSignin_continueUserActivity(
   id self,
   SEL _cmd,
   UIApplication *app,
@@ -56,7 +56,7 @@ static BOOL RNKakaoLogin_continueUserActivity(
   void (^restorationHandler)(NSArray<id<UIUserActivityRestoring>> *)
 ) {
   NSURL *url = userActivity.webpageURL;
-  NSLog(@"[RNKakaoLogin] continueUserActivity received: %@", url.absoluteString);
+  NSLog(@"[RNKakaoSignin] continueUserActivity received: %@", url.absoluteString);
 
   if (RNKakaoHandleURL(url)) {
     return YES;
@@ -92,20 +92,20 @@ static void RNKakaoInstallHandler(
 
   if (method == NULL) {
     class_addMethod(cls, selector, interceptor, types);
-    NSLog(@"[RNKakaoLogin] %@ added to %@", name, NSStringFromClass(cls));
+    NSLog(@"[RNKakaoSignin] %@ added to %@", name, NSStringFromClass(cls));
     return;
   }
 
   storeOriginal(method_getImplementation(method));
   method_setImplementation(method, interceptor);
-  NSLog(@"[RNKakaoLogin] %@ swizzled on %@", name, NSStringFromClass(cls));
+  NSLog(@"[RNKakaoSignin] %@ swizzled on %@", name, NSStringFromClass(cls));
 }
 
 // 로더
-@interface RNKakaoLoginLoader : NSObject
+@interface RNKakaoSigninLoader : NSObject
 @end
 
-@implementation RNKakaoLoginLoader
+@implementation RNKakaoSigninLoader
 
 // 앱 delegate 주입
 + (void)load {
@@ -127,7 +127,7 @@ static void RNKakaoInstallHandler(
     RNKakaoInstallHandler(
       cls,
       @selector(application:openURL:options:),
-      (IMP)RNKakaoLogin_openURL,
+      (IMP)RNKakaoSignin_openURL,
       "B@:@@@",
       RNKakaoStoreOpenURLIMP,
       @"openURL"
@@ -135,7 +135,7 @@ static void RNKakaoInstallHandler(
     RNKakaoInstallHandler(
       cls,
       @selector(application:continueUserActivity:restorationHandler:),
-      (IMP)RNKakaoLogin_continueUserActivity,
+      (IMP)RNKakaoSignin_continueUserActivity,
       "B@:@@@@",
       RNKakaoStoreUserActivityIMP,
       @"continueUserActivity"

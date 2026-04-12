@@ -4,15 +4,15 @@ import KakaoSDKCommon
 import KakaoSDKAuth
 import KakaoSDKUser
 
-@objc(RNKakaoLogin)
-class RNKakaoLogin: NSObject {
+@objc(RNKakaoSignin)
+class RNKakaoSignin: NSObject {
 
   // SDK 초기화
   public override init() {
     let appKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String
     let customScheme = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_SCHEME") as? String
 
-    RNKakaoLogin.configureSDK(appKey: appKey, customScheme: customScheme)
+    RNKakaoSignin.configureSDK(appKey: appKey, customScheme: customScheme)
 
     super.init()
   }
@@ -133,7 +133,7 @@ class RNKakaoLogin: NSObject {
   func shippingAddresses(_ resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
     runOnMain {
-      let fmt = RNKakaoLoginHelper.dateFormatter
+      let fmt = RNKakaoSigninHelper.dateFormatter
       UserApi.shared.shippingAddresses { addresses, error in
         if let error = error { self.reject(reject, error) }
         else {
@@ -165,7 +165,7 @@ class RNKakaoLogin: NSObject {
   func serviceTerms(_ resolve: @escaping RCTPromiseResolveBlock,
                     rejecter reject: @escaping RCTPromiseRejectBlock) {
     runOnMain {
-      let fmt = RNKakaoLoginHelper.dateFormatter
+      let fmt = RNKakaoSigninHelper.dateFormatter
       UserApi.shared.serviceTerms { terms, error in
         if let error = error { self.reject(reject, error) }
         else {
@@ -215,7 +215,7 @@ class RNKakaoLogin: NSObject {
   ) -> (OAuthToken?, Error?) -> Void {
     return { token, error in
       if let error = error { self.reject(reject, error) }
-      else { resolve(RNKakaoLoginHelper.tokenToDict(token)) }
+      else { resolve(RNKakaoSigninHelper.tokenToDict(token)) }
     }
   }
 

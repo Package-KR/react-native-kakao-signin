@@ -1903,7 +1903,7 @@ PODS:
 DEPENDENCIES:
   - FBLazyVector (from `../../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
-  - "kakao-login (from `../../node_modules/@packagekr/kakao-login`)"
+  - "kakao-login (from `../../node_modules/@package-kr/react-native-kakao-signin`)"
   - RCTDeprecation (from `../../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../../node_modules/react-native/Libraries/Required`)
   - RCTSwiftUI (from `../../node_modules/react-native/ReactApple/RCTSwiftUI`)
@@ -1993,7 +1993,7 @@ EXTERNAL SOURCES:
     :podspec: "../../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v250829098.0.10
   kakao-login:
-    :path: "../../node_modules/@packagekr/kakao-login"
+    :path: "../../node_modules/@package-kr/react-native-kakao-signin"
   RCTDeprecation:
     :path: "../../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   RCTRequired:
@@ -2144,8 +2144,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
   FBLazyVector: c00c20551d40126351a6783c47ce75f5b374851b
-  hermes-engine: 41c674a36b7210b9845f24205bb592678ad97088
-  kakao-login: 157caeb39af113fed9e3f827a063c24635928892
+  hermes-engine: 19fb1ae40d26e337237b6d7b2f3360231869d4ce
+  kakao-login: 1f1bd5003faef86774746713d375bc51ea5616f0
   KakaoSDKAuth: 569b377eda622d93d4575240b8031cd658163eef
   KakaoSDKCommon: d57127c339fc79e73aa8b236a4c77211c29924f1
   KakaoSDKUser: 043bcd7e91454ebf3bf64f150c430e6f65f0a08d
@@ -2157,7 +2157,7 @@ SPEC CHECKSUMS:
   React: 1b1536b9099195944034e65b1830f463caaa8390
   React-callinvoker: 6dff6d17d1d6cc8fdf85468a649bafed473c65f5
   React-Core: 00faa4d038298089a1d5a5b21dde8660c4f0820d
-  React-Core-prebuilt: 9500952494bd1914767a160a360cd8e1ec1e0fae
+  React-Core-prebuilt: 8418e6ba8dfbbbc148c4fa55da5bc41c8e4a7f61
   React-CoreModules: a17807f849bfd86045b0b9a75ec8c19373b482f6
   React-cxxreact: c7b53ace5827be54048288bce5c55f337c41e95f
   React-debug: e1f00fcd2cef58a2897471a6d76a4ef5f5f90c74
@@ -2219,10 +2219,10 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 5787b37b8e2e51dfeab697ec031cc7c4080dcea2
   ReactCodegen: 2f0ae2f4bdb77897a207e3f8f26f767d94b2eecd
   ReactCommon: fe2a3af8975e63efa60f95fca8c34dc85deee360
-  ReactNativeDependencies: bcd124c6f898e0b1f1231ab5e2e5aa946950af7b
+  ReactNativeDependencies: 4af5538fb62b2f31c1173d87f5596a7c8f10800f
   RNSVG: 04044c3abcf177fd674a1a3d13097efa1adebcbe
   Yoga: e83c3121d079541e69f3c5c623faaaf933fb5812
 
-PODFILE CHECKSUM: 86e667a295e6152d101b83d51204657278840e71
+PODFILE CHECKSUM: 8bd00e560b6e474fe6b4e51ccfefd5bacba64395
 
 COCOAPODS: 1.16.2

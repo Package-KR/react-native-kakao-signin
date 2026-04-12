@@ -10,12 +10,12 @@ Pod::Spec.new do |s|
   s.name         = "kakao-login"
   s.version      = package["version"]
   s.summary      = package["description"]
-  s.homepage     = "https://github.com/Package-KR/RNSocialLogin"
+  s.homepage     = "https://github.com/Package-KR/react-native-kakao-signin"
   s.license      = "MIT"
   s.authors      = { "Package.kr" => "" }
   s.platforms    = { :ios => "13.0" }
   s.framework    = 'UIKit'
-  s.source       = { :git => "https://github.com/Package-KR/RNSocialLogin.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/Package-KR/react-native-kakao-signin.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.requires_arc = true

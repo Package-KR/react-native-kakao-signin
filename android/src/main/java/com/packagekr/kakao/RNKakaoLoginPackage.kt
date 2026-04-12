@@ -8,17 +8,17 @@ import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.uimanager.ViewManager
 
-class RNKakaoLoginPackage : BaseReactPackage() {
+class RNKakaoSigninPackage : BaseReactPackage() {
     override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
         return when (name) {
-            RNKakaoLoginModule.NAME -> RNKakaoLoginModule(reactContext)
+            RNKakaoSigninModule.NAME -> RNKakaoSigninModule(reactContext)
             else -> null
         }
     }
 
     // 모듈 정보 생성
     override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-        val moduleList = arrayOf(RNKakaoLoginModule::class.java)
+        val moduleList = arrayOf(RNKakaoSigninModule::class.java)
         val reactModuleInfoMap = HashMap<String, ReactModuleInfo>()
 
         for (moduleClass in moduleList) {

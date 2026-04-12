@@ -1,7 +1,7 @@
 #import <React/RCTBridgeModule.h>
-#import <RNKakaoLoginSpec/RNKakaoLoginSpec.h>
+#import <RNKakaoSigninSpec/RNKakaoSigninSpec.h>
 
-@interface RCT_EXTERN_MODULE(RNKakaoLogin, NSObject)
+@interface RCT_EXTERN_MODULE(RNKakaoSignin, NSObject)
 
 RCT_EXTERN_METHOD(login:(RCTPromiseResolveBlock *)resolve rejecter:(RCTPromiseRejectBlock *)reject);
 RCT_EXTERN_METHOD(loginWithKakaoAccount:(RCTPromiseResolveBlock *)resolve rejecter:(RCTPromiseRejectBlock *)reject);

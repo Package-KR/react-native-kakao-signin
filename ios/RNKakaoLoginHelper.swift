@@ -3,7 +3,7 @@ import Foundation
 import KakaoSDKAuth
 
 // 공통 헬퍼
-enum RNKakaoLoginHelper {
+enum RNKakaoSigninHelper {
 
   static let dateFormatter: DateFormatter = {
     let f = DateFormatter()

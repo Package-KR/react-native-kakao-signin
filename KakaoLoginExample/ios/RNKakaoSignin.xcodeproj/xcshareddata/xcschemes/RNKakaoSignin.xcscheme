@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "RNSocialLogin.app"
-               BlueprintName = "RNSocialLogin"
-               ReferencedContainer = "container:RNSocialLogin.xcodeproj">
+               BuildableName = "RNKakaoSignin.app"
+               BlueprintName = "RNKakaoSignin"
+               ReferencedContainer = "container:RNKakaoSignin.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "RNSocialLoginTests.xctest"
-               BlueprintName = "RNSocialLoginTests"
-               ReferencedContainer = "container:RNSocialLogin.xcodeproj">
+               BuildableName = "RNKakaoSigninTests.xctest"
+               BlueprintName = "RNKakaoSigninTests"
+               ReferencedContainer = "container:RNKakaoSignin.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "RNSocialLogin.app"
-            BlueprintName = "RNSocialLogin"
-            ReferencedContainer = "container:RNSocialLogin.xcodeproj">
+            BuildableName = "RNKakaoSignin.app"
+            BlueprintName = "RNKakaoSignin"
+            ReferencedContainer = "container:RNKakaoSignin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "RNSocialLogin.app"
-            BlueprintName = "RNSocialLogin"
-            ReferencedContainer = "container:RNSocialLogin.xcodeproj">
+            BuildableName = "RNKakaoSignin.app"
+            BlueprintName = "RNKakaoSignin"
+            ReferencedContainer = "container:RNKakaoSignin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

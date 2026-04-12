@@ -82,9 +82,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.rnsociallogin"
+    namespace "kr.packagekr.kakao.signin"
     defaultConfig {
-        applicationId "com.rnsociallogin"
+        applicationId "kr.packagekr.kakao.signin"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
