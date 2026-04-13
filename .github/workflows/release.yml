@@ -80,7 +80,7 @@ jobs:
 
           git add package.json package-lock.json
           git commit -m "chore(release): ${version} [skip ci]"
-          git tag "$version"
+          git tag -a "$version" -m "Release $version"
           git push origin HEAD:main --follow-tags
 
       # GitHub Releases 화면에 자동 생성 노트를 포함한 릴리스를 만듭니다.
