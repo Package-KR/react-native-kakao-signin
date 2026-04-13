@@ -20,15 +20,15 @@ jobs:
     steps:
       # 릴리스 계산과 태그 생성을 위해 전체 git 히스토리를 가져옵니다.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       # npm publish와 package-lock 처리에 필요한 Node 환경을 맞춥니다.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24.14.1
           registry-url: https://registry.npmjs.org
           cache: npm
 
@@ -82,15 +82,15 @@ jobs:
     steps:
       # 버전 계산과 릴리스 커밋 생성을 위해 전체 git 히스토리를 가져옵니다.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       # npm version과 package-lock 처리를 위한 Node 환경을 맞춥니다.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24.14.1
           registry-url: https://registry.npmjs.org
           cache: npm
 
@@ -138,15 +138,15 @@ jobs:
     steps:
       # GitHub Release 생성과 npm 배포를 위해 최신 main 상태를 다시 가져옵니다.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       # npm publish와 gh CLI 사용을 위한 Node 환경을 맞춥니다.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24.14.1
           registry-url: https://registry.npmjs.org
           cache: npm
 
