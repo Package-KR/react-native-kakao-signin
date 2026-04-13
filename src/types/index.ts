@@ -62,17 +62,9 @@ export type KakaoProfile = {
   isEmailValid: boolean | null;
   isEmailVerified: boolean | null;
   isKorean: boolean | null;
-  hasEmail: boolean | null;
-  hasPhoneNumber: boolean | null;
-  hasBirthday: boolean | null;
-  hasBirthyear: boolean | null;
-  hasAgeRange: boolean | null;
-  hasGender: boolean | null;
   isDefaultImage: boolean | null;
-  isDefaultNickname: boolean | null;
   connectedAt: string | null;
   synchedAt: string | null;
-  isLeapMonth: boolean | null;
   ci: string | null;
   ciAuthenticatedAt: string | null;
   emailNeedsAgreement: boolean | null;

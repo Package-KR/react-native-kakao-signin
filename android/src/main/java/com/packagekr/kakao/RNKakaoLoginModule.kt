@@ -159,17 +159,9 @@ class RNKakaoSigninModule(
             account?.isEmailValid?.let { profile.putBoolean("isEmailValid", it) }
             account?.isEmailVerified?.let { profile.putBoolean("isEmailVerified", it) }
             account?.isKorean?.let { profile.putBoolean("isKorean", it) }
-            account?.hasEmail?.let { profile.putBoolean("hasEmail", it) }
-            account?.hasPhoneNumber?.let { profile.putBoolean("hasPhoneNumber", it) }
-            account?.hasBirthday?.let { profile.putBoolean("hasBirthday", it) }
-            account?.hasBirthyear?.let { profile.putBoolean("hasBirthyear", it) }
-            account?.hasAgeRange?.let { profile.putBoolean("hasAgeRange", it) }
-            account?.hasGender?.let { profile.putBoolean("hasGender", it) }
             detail?.isDefaultImage?.let { profile.putBoolean("isDefaultImage", it) }
-            detail?.isDefaultNickname?.let { profile.putBoolean("isDefaultNickname", it) }
             profile.putString("connectedAt", formatDate(user.connectedAt))
             profile.putString("synchedAt", formatDate(user.synchedAt))
-            account?.isLeapMonth?.let { profile.putBoolean("isLeapMonth", it) }
             account?.ci?.let { profile.putString("ci", it) }
             profile.putString("ciAuthenticatedAt", formatDate(account?.ciAuthenticatedAt))
             account?.ageRangeNeedsAgreement?.let { profile.putBoolean("ageRangeNeedsAgreement", it) }

@@ -98,7 +98,7 @@ class RNKakaoSignin: NSObject {
         else {
           let account = user?.kakaoAccount
           let profile = account?.profile
-          resolve([
+          let result: [String: Any?] = [
             "id": user?.id as Any,
             "name": account?.name as Any,
             "email": account?.email as Any,
@@ -114,17 +114,9 @@ class RNKakaoSignin: NSObject {
             "isEmailValid": account?.isEmailValid as Any,
             "isEmailVerified": account?.isEmailVerified as Any,
             "isKorean": account?.isKorean as Any,
-            "hasEmail": account?.hasEmail as Any,
-            "hasPhoneNumber": account?.hasPhoneNumber as Any,
-            "hasBirthday": account?.hasBirthday as Any,
-            "hasBirthyear": account?.hasBirthyear as Any,
-            "hasAgeRange": account?.hasAgeRange as Any,
-            "hasGender": account?.hasGender as Any,
             "isDefaultImage": profile?.isDefaultImage as Any,
-            "isDefaultNickname": profile?.isDefaultNickname as Any,
             "connectedAt": user?.connectedAt as Any,
             "synchedAt": user?.synchedAt as Any,
-            "isLeapMonth": account?.isLeapMonth as Any,
             "ci": account?.ci as Any,
             "ciAuthenticatedAt": account?.ciAuthenticatedAt as Any,
             "ageRangeNeedsAgreement": account?.ageRangeNeedsAgreement as Any,
@@ -139,7 +131,8 @@ class RNKakaoSignin: NSObject {
             "profileImageNeedsAgreement": account?.profileImageNeedsAgreement as Any,
             "nameNeedsAgreement": account?.nameNeedsAgreement as Any,
             "ciNeedsAgreement": account?.ciNeedsAgreement as Any,
-          ])
+          ]
+          resolve(result)
         }
       }
     }

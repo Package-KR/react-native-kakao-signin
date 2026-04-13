@@ -4,7 +4,7 @@ PODS:
   - hermes-engine (250829098.0.10):
     - hermes-engine/Pre-built (= 250829098.0.10)
   - hermes-engine/Pre-built (250829098.0.10)
-  - kakao-login (0.0.1):
+  - kakao-login (1.0.1):
     - hermes-engine
     - KakaoSDKAuth (= 2.22.0)
     - KakaoSDKCommon (= 2.22.0)
@@ -2145,7 +2145,7 @@ SPEC CHECKSUMS:
   Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
   FBLazyVector: c00c20551d40126351a6783c47ce75f5b374851b
   hermes-engine: 19fb1ae40d26e337237b6d7b2f3360231869d4ce
-  kakao-login: 1f1bd5003faef86774746713d375bc51ea5616f0
+  kakao-login: 7884b037720d0ff7fa4ccfaea5262acadbab4fa5
   KakaoSDKAuth: 569b377eda622d93d4575240b8031cd658163eef
   KakaoSDKCommon: d57127c339fc79e73aa8b236a4c77211c29924f1
   KakaoSDKUser: 043bcd7e91454ebf3bf64f150c430e6f65f0a08d

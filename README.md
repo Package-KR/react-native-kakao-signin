@@ -233,17 +233,9 @@ const terms = await serviceTerms();
 | `isEmailValid`                  | `boolean \| null` | 이메일 유효 여부                  |
 | `isEmailVerified`               | `boolean \| null` | 이메일 인증 여부                  |
 | `isKorean`                      | `boolean \| null` | 한국인 여부                       |
-| `hasEmail`                      | `boolean \| null` | 이메일 보유 여부                  |
-| `hasPhoneNumber`                | `boolean \| null` | 전화번호 보유 여부                |
-| `hasBirthday`                   | `boolean \| null` | 생일 보유 여부                    |
-| `hasBirthyear`                  | `boolean \| null` | 출생 연도 보유 여부               |
-| `hasAgeRange`                   | `boolean \| null` | 연령대 보유 여부                  |
-| `hasGender`                     | `boolean \| null` | 성별 보유 여부                    |
 | `isDefaultImage`                | `boolean \| null` | 기본 프로필 이미지 여부           |
-| `isDefaultNickname`             | `boolean \| null` | 기본 닉네임 여부                  |
 | `connectedAt`                   | `string \| null`  | 서비스 연결 시각                  |
 | `synchedAt`                     | `string \| null`  | 카카오싱크 로그인 시각            |
-| `isLeapMonth`                   | `boolean \| null` | 생일 윤달 여부                    |
 | `ci`                            | `string \| null`  | 연계정보                          |
 | `ciAuthenticatedAt`             | `string \| null`  | CI 발급 시각                      |
 | `emailNeedsAgreement`           | `boolean \| null` | 이메일 제공 동의 필요 여부        |
