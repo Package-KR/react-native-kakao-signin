@@ -3,7 +3,7 @@
   "version": "1.0.5",
   "description": "React Native Kakao Login",
   "main": "src/index",
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "scripts": {
     "android": "npm run android --workspace KakaoLoginExample",
     "ios": "npm run ios --workspace KakaoLoginExample --",
@@ -47,8 +47,4 @@
     "android": {
       "javaPackageName": "com.packagekr.kakao"
     }
-  },
-  "engines": {
-    "node": ">= 24.14.1"
-  }
-}
+  }}
