@@ -10,7 +10,7 @@ echo ""
 echo "Android 빌드 캐시 리셋 시작"
 echo ""
 
-cd "$APP_DIR/example/cli/RNKakaoSigninCliExample/android"
+cd "$APP_DIR/example/RNKakaoSigninCliExample/android"
 
 # 빌드 폴더 삭제
 _wipe_build() {
