@@ -12,12 +12,12 @@ apply plugin: "com.facebook.react"
 react {
     jsRootDir = file("../src")
     libraryName = "RNKakaoSigninSpec"
-    codegenJavaPackageName = "com.packagekr.kakao"
+    codegenJavaPackageName = "kr.packagekr.kakao.signin"
 }
 
 // Android 빌드 설정
 android {
-    namespace "com.packagekr.kakao"
+    namespace "kr.packagekr.kakao.signin"
     compileSdkVersion getExtOrDefault("compileSdkVersion", 36)
 
     defaultConfig {
