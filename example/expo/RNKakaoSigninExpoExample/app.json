@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "RNKakaoSigninExpoExample",
+    "slug": "RNKakaoSigninExpoExample",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "kr.packagekr.kakao.signin.expo"
+    },
+    "android": {
+      "package": "kr.packagekr.kakao.signin.expo",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      ["@package-kr/react-native-kakao-signin", { "kakaoAppKey": "KAKAO_APP_KEY" }]
+    ]
+  }
+}

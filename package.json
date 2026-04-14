@@ -5,11 +5,8 @@
   "main": "src/index",
   "types": "src/index.ts",
   "scripts": {
-    "android": "npm run android --workspace KakaoLoginExample",
-    "ios": "npm run ios --workspace KakaoLoginExample --",
-    "lint": "npm run lint --workspaces --if-present",
-    "start": "npm run start --workspace KakaoLoginExample",
-    "test": "npm run test --workspaces --if-present"
+    "build:plugin": "tsc -p plugin/tsconfig.json",
+    "prepublishOnly": "npm run build:plugin"
   },
   "repository": {
     "type": "git",
@@ -19,8 +16,10 @@
     "src",
     "ios",
     "android",
+    "plugin/build",
+    "app.plugin.js",
     "*.podspec",
-    "!KakaoLoginExample",
+    "!example",
     "!android/build",
     "!ios/build"
   ],
@@ -30,12 +29,27 @@
   "keywords": [
     "react-native",
     "kakao",
-    "login"
+    "kakao-login",
+    "kakao-signin",
+    "kakao-sdk",
+    "kakao-auth",
+    "kakaotalk",
+    "login",
+    "signin",
+    "oauth",
+    "social-login",
+    "expo",
+    "expo-plugin",
+    "turbomodule",
+    "new-architecture",
+    "ios",
+    "android"
   ],
   "license": "MIT",
-  "workspaces": [
-    "KakaoLoginExample"
-  ],
+  "devDependencies": {
+    "@expo/config-plugins": "^9.0.0",
+    "@types/node": "^25.6.0"
+  },
   "peerDependencies": {
     "react": "*",
     "react-native": "*"

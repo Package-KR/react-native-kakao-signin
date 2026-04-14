@@ -1,5 +1,5 @@
-# Example
-KakaoLoginExample/
+# Example Project
+example/
 
 # Docs
 docs/
@@ -20,6 +20,10 @@ node_modules/
 vendor/
 script/
 래퍼런스/
+
+# Plugin source (빌드 결과만 배포)
+plugin/src/
+plugin/tsconfig.json
 
 # Config
 tsconfig.json

@@ -38,7 +38,6 @@ local.properties
 .kotlin/
 
 # node.js
-#
 node_modules/
 npm-debug.log
 yarn-error.log
@@ -76,20 +75,37 @@ yarn-error.log
 !.yarn/sdks
 !.yarn/versions
 
-# example app
-/KakaoLoginExample/.env
-/KakaoLoginExample/node_modules/
-/KakaoLoginExample/android/.gradle/
-/KakaoLoginExample/android/app/build/
-/KakaoLoginExample/android/build/
-/KakaoLoginExample/ios/build/
-/KakaoLoginExample/ios/Pods/
-/KakaoLoginExample/env/.env.development
-/KakaoLoginExample/env/.env.production
+# example app (CLI)
+/example/cli/RNKakaoSigninCliExample/.env
+/example/cli/RNKakaoSigninCliExample/node_modules/
+/example/cli/RNKakaoSigninCliExample/android/.gradle/
+/example/cli/RNKakaoSigninCliExample/android/app/build/
+/example/cli/RNKakaoSigninCliExample/android/build/
+/example/cli/RNKakaoSigninCliExample/ios/build/
+/example/cli/RNKakaoSigninCliExample/ios/Pods/
+/example/cli/RNKakaoSigninCliExample/vendor/
+/example/cli/RNKakaoSigninCliExample/env/.env.development
+/example/cli/RNKakaoSigninCliExample/env/.env.production
+
+# example app (Expo)
+/example/expo/RNKakaoSigninExpoExample/node_modules/
+/example/expo/RNKakaoSigninExpoExample/.env
+/example/expo/RNKakaoSigninExpoExample/.env*.local
+/example/expo/RNKakaoSigninExpoExample/android/
+/example/expo/RNKakaoSigninExpoExample/ios/
+/example/expo/RNKakaoSigninExpoExample/.expo/
+/example/expo/RNKakaoSigninExpoExample/dist/
+/example/expo/RNKakaoSigninExpoExample/web-build/
+/example/expo/RNKakaoSigninExpoExample/expo-env.d.ts
+/example/expo/RNKakaoSigninExpoExample/*.tsbuildinfo
 
 # references
 references/
 
+# Plugin build output
+plugin/build/
+
 # AI
 CLAUDE.md
 AGENTS.md
+Agent/
