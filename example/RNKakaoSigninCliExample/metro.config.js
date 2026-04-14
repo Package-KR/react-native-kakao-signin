@@ -1,7 +1,7 @@
 const path = require('path');
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
-const packageRoot = path.resolve(__dirname, '..', '..', '..');
+const packageRoot = path.resolve(__dirname, '..', '..');
 
 /**
  * Metro configuration

@@ -76,28 +76,28 @@ yarn-error.log
 !.yarn/versions
 
 # example app (CLI)
-/example/cli/RNKakaoSigninCliExample/.env
-/example/cli/RNKakaoSigninCliExample/node_modules/
-/example/cli/RNKakaoSigninCliExample/android/.gradle/
-/example/cli/RNKakaoSigninCliExample/android/app/build/
-/example/cli/RNKakaoSigninCliExample/android/build/
-/example/cli/RNKakaoSigninCliExample/ios/build/
-/example/cli/RNKakaoSigninCliExample/ios/Pods/
-/example/cli/RNKakaoSigninCliExample/vendor/
-/example/cli/RNKakaoSigninCliExample/env/.env.development
-/example/cli/RNKakaoSigninCliExample/env/.env.production
+/example/RNKakaoSigninCliExample/.env
+/example/RNKakaoSigninCliExample/node_modules/
+/example/RNKakaoSigninCliExample/android/.gradle/
+/example/RNKakaoSigninCliExample/android/app/build/
+/example/RNKakaoSigninCliExample/android/build/
+/example/RNKakaoSigninCliExample/ios/build/
+/example/RNKakaoSigninCliExample/ios/Pods/
+/example/RNKakaoSigninCliExample/vendor/
+/example/RNKakaoSigninCliExample/env/.env.development
+/example/RNKakaoSigninCliExample/env/.env.production
 
 # example app (Expo)
-/example/expo/RNKakaoSigninExpoExample/node_modules/
-/example/expo/RNKakaoSigninExpoExample/.env
-/example/expo/RNKakaoSigninExpoExample/.env*.local
-/example/expo/RNKakaoSigninExpoExample/android/
-/example/expo/RNKakaoSigninExpoExample/ios/
-/example/expo/RNKakaoSigninExpoExample/.expo/
-/example/expo/RNKakaoSigninExpoExample/dist/
-/example/expo/RNKakaoSigninExpoExample/web-build/
-/example/expo/RNKakaoSigninExpoExample/expo-env.d.ts
-/example/expo/RNKakaoSigninExpoExample/*.tsbuildinfo
+/example/RNKakaoSigninExpoExample/node_modules/
+/example/RNKakaoSigninExpoExample/.env
+/example/RNKakaoSigninExpoExample/.env*.local
+/example/RNKakaoSigninExpoExample/android/
+/example/RNKakaoSigninExpoExample/ios/
+/example/RNKakaoSigninExpoExample/.expo/
+/example/RNKakaoSigninExpoExample/dist/
+/example/RNKakaoSigninExpoExample/web-build/
+/example/RNKakaoSigninExpoExample/expo-env.d.ts
+/example/RNKakaoSigninExpoExample/*.tsbuildinfo
 
 # references
 references/

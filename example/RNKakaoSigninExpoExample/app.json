@@ -13,6 +13,6 @@
       "package": "kr.packagekr.kakao.signin",
       "edgeToEdgeEnabled": true
     },
-    "plugins": [["@package-kr/react-native-kakao-signin", { "kakaoAppKey": "kakaoa1b5114402b6d9a9a5da7f8264cad6e1" }]]
+    "plugins": [["../../app.plugin.js", { "kakaoAppKey": "a1b5114402b6d9a9a5da7f8264cad6e1" }]]
   }
 }

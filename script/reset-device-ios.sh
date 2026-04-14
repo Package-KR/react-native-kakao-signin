@@ -34,7 +34,7 @@ run_task "DerivedData 삭제" \
 if [ "$SKIP_PODS" = true ]; then
     log_warn "--skip-pods: Pods 단계 건너뜀"
 else
-    cd "$APP_DIR/example/cli/RNKakaoSigninCliExample/ios"
+    cd "$APP_DIR/example/RNKakaoSigninCliExample/ios"
 
     _wipe_pods() {
         [ -f "Podfile.lock" ] && rm Podfile.lock
