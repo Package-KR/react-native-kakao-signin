@@ -5,6 +5,7 @@
 @interface RNKakaoSignin : NSObject
 + (BOOL)isKakaoTalkLoginUrl:(NSURL *)url;
 + (BOOL)handleOpenUrl:(NSURL *)url;
++ (BOOL)isSDKInitialized;
 @end
 
 typedef BOOL (*RNKakaoOpenURLIMP)(id, SEL, UIApplication *, NSURL *, NSDictionary *);
@@ -22,6 +23,11 @@ static void RNKakaoInstallHandler(Class cls, SEL selector, IMP interceptor, cons
 // 카카오 로그인 복귀 URL 처리
 static BOOL RNKakaoHandleURL(NSURL *url) {
   if (url == nil) {
+    return NO;
+  }
+
+  // SDK 초기화 전에는 카카오 URL 체크를 하지 않음
+  if (![RNKakaoSignin isSDKInitialized]) {
     return NO;
   }
 

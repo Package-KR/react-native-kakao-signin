@@ -17,8 +17,16 @@ class RNKakaoSignin: NSObject {
     super.init()
   }
 
+  // SDK 초기화 상태
+  private static var sdkInitialized = false
+
   // 메인 큐 초기화
   @objc static func requiresMainQueueSetup() -> Bool { true }
+
+  // SDK 초기화 여부 확인 (RNKakaoLoginLoader.m에서 사용)
+  @objc static func isSDKInitialized() -> Bool {
+    return sdkInitialized
+  }
 
   // 카카오톡 로그인 URL 확인
   @objc(isKakaoTalkLoginUrl:)
@@ -213,10 +221,11 @@ class RNKakaoSignin: NSObject {
 
     if let customScheme = customScheme {
       KakaoSDK.initSDK(appKey: appKey, customScheme: customScheme)
-      return
+    } else {
+      KakaoSDK.initSDK(appKey: appKey)
     }
 
-    KakaoSDK.initSDK(appKey: appKey)
+    sdkInitialized = true
   }
 
   // 메인 스레드 실행
