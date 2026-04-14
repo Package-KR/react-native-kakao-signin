@@ -7,14 +7,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "kr.packagekr.kakao.signin.expo"
+      "bundleIdentifier": "kr.packagekr.kakao.signin"
     },
     "android": {
-      "package": "kr.packagekr.kakao.signin.expo",
+      "package": "kr.packagekr.kakao.signin",
       "edgeToEdgeEnabled": true
     },
-    "plugins": [
-      ["@package-kr/react-native-kakao-signin", { "kakaoAppKey": "KAKAO_APP_KEY" }]
-    ]
+    "plugins": [["@package-kr/react-native-kakao-signin", { "kakaoAppKey": "kakaoa1b5114402b6d9a9a5da7f8264cad6e1" }]]
   }
 }
