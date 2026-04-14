@@ -4,15 +4,23 @@
     "slug": "RNKakaoSigninExpoExample",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "rnkakaosigninexpoexample",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "kr.packagekr.kakao.signin"
     },
     "android": {
-      "package": "kr.packagekr.kakao.signin",
-      "edgeToEdgeEnabled": true
+      "package": "kr.packagekr.kakao.signin"
     },
-    "plugins": [["../../app.plugin.js", { "kakaoAppKey": "a1b5114402b6d9a9a5da7f8264cad6e1" }]]
+    "plugins": [
+      "expo-router",
+      [
+        "@package-kr/react-native-kakao-signin",
+        {
+          "kakaoAppKey": "a1b5114402b6d9a9a5da7f8264cad6e1"
+        }
+      ]
+    ]
   }
 }
