@@ -60,7 +60,7 @@
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "com.packagekr.kakao"
+      "javaPackageName": "kr.packagekr.kakao.signin"
     }
   }
 }
