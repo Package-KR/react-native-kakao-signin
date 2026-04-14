@@ -9,7 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@package-kr/react-native-kakao-signin": "^2.0.0",
+    "@package-kr/react-native-kakao-signin": "file:../..",
     "expo": "~54.0.33",
     "expo-router": "~6.0.23",
     "expo-status-bar": "~3.0.9",
