@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">RNKakaoSignin</string>
+    <string name="app_name">RNKakaoSigninCliExample</string>
     <string name="kakao_app_key">a1b5114402b6d9a9a5da7f8264cad6e1</string>
 </resources>

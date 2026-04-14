@@ -2,6 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
+
 import KakaoSDKAuth
 
 @main
@@ -25,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "RNKakaoSignin",
+      withModuleName: "RNKakaoSigninCliExample",
       in: window,
       launchOptions: launchOptions
     )
