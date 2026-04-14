@@ -1,6 +1,12 @@
-import NativeKakaoLogin from './NativeKakaoLogin';
+import NativeKakaoLogin from './NativeRNKakaoSignin';
 
-import type { KakaoOAuthToken, KakaoProfile, KakaoAccessTokenInfo, KakaoShippingAddresses, KakaoServiceTerms } from './types';
+import type {
+  KakaoOAuthToken,
+  KakaoProfile,
+  KakaoAccessTokenInfo,
+  KakaoShippingAddresses,
+  KakaoServiceTerms,
+} from './types';
 
 // 카카오 로그인
 export const login = (): Promise<KakaoOAuthToken> => {
