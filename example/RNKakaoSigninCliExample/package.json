@@ -24,7 +24,7 @@
     "@react-native/metro-config": "0.85.1",
     "@react-native/typescript-config": "0.85.1",
     "@types/react": "^19.2.14",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   },
   "engines": {
     "node": ">= 22.22.2"
