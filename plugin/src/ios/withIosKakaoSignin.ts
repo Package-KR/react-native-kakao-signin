@@ -2,7 +2,9 @@ import {
   type ConfigPlugin,
   withInfoPlist,
   withAppDelegate,
+  withXcodeProject,
 } from "@expo/config-plugins";
+import { readFile, writeFile } from "node:fs";
 import type { KakaoSigninPluginProps } from "..";
 
 const KAKAO_SCHEMES = ["kakaokompassauth", "kakaotalk"];
@@ -81,12 +83,51 @@ const modifyAppDelegate: ConfigPlugin<KakaoSigninPluginProps> = (
   });
 };
 
+const KAKAO_SDK_VERSION_VARIABLE = "$KakaoSDKVersion";
+const KAKAO_SDK_VERSION_REGEX = /\$KakaoSDKVersion\=.*(\r\n|\r|\n)/g;
+
+const readFileAsync = (path: string): Promise<string> =>
+  new Promise((resolve, reject) =>
+    readFile(path, "utf8", (err, data) => (err ? reject(err) : resolve(data)))
+  );
+
+const writeFileAsync = (path: string, data: string): Promise<void> =>
+  new Promise((resolve, reject) =>
+    writeFile(path, data, (err) => (err ? reject(err) : resolve()))
+  );
+
+/**
+ * Podfile에 $KakaoSDKVersion 변수 주입
+ * overrideKakaoSDKVersion이 지정된 경우에만 동작
+ */
+const modifyPodfile: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
+  return withXcodeProject(config, async (config) => {
+    const iosPath = config.modRequest.platformProjectRoot;
+    const podfile = await readFileAsync(`${iosPath}/Podfile`);
+
+    // 기존 $KakaoSDKVersion 선언 제거
+    const cleanedPodfile = podfile.replace(KAKAO_SDK_VERSION_REGEX, "");
+
+    if (props.overrideKakaoSDKVersion) {
+      const newPodfile = cleanedPodfile.concat(
+        `${KAKAO_SDK_VERSION_VARIABLE}="${props.overrideKakaoSDKVersion}"\n`
+      );
+      await writeFileAsync(`${iosPath}/Podfile`, newPodfile);
+    } else {
+      await writeFileAsync(`${iosPath}/Podfile`, cleanedPodfile);
+    }
+
+    return config;
+  });
+};
+
 export const withIosKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (
   config,
   props
 ) => {
   config = modifyInfoPlist(config, props);
   config = modifyAppDelegate(config, props);
+  config = modifyPodfile(config, props);
 
   return config;
 };

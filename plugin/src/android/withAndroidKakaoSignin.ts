@@ -3,6 +3,7 @@ import {
   type ConfigPlugin,
   withAndroidManifest,
   withStringsXml,
+  withProjectBuildGradle,
 } from "@expo/config-plugins";
 import type { ManifestActivity } from "@expo/config-plugins/build/android/Manifest";
 import type { KakaoSigninPluginProps } from "..";
@@ -85,12 +86,54 @@ const modifyStringsXml: ConfigPlugin<KakaoSigninPluginProps> = (
   });
 };
 
+/**
+ * build.gradle에 kakaoSdkVersion ext 속성 주입
+ * overrideKakaoSDKVersion이 지정된 경우에만 동작
+ */
+const modifyProjectBuildGradle: ConfigPlugin<KakaoSigninPluginProps> = (
+  config,
+  props
+) => {
+  if (!props.overrideKakaoSDKVersion) return config;
+
+  return withProjectBuildGradle(config, (config) => {
+    const contents = config.modResults.contents;
+    const extProperty = `kakaoSdkVersion = "${props.overrideKakaoSDKVersion}"`;
+
+    // 이미 kakaoSdkVersion이 선언되어 있으면 교체
+    if (contents.includes("kakaoSdkVersion")) {
+      config.modResults.contents = contents.replace(
+        /kakaoSdkVersion\s*=\s*"[^"]*"/,
+        extProperty
+      );
+      return config;
+    }
+
+    // ext 블록이 있으면 그 안에 추가
+    if (contents.includes("ext {")) {
+      config.modResults.contents = contents.replace(
+        /ext\s*{/,
+        `ext {\n        ${extProperty}`
+      );
+    } else {
+      // ext 블록이 없으면 새로 생성
+      config.modResults.contents = contents.replace(
+        /buildscript\s*{/,
+        `buildscript {\n    ext {\n        ${extProperty}\n    }`
+      );
+    }
+
+    return config;
+  });
+};
+
 export const withAndroidKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (
   config,
   props
 ) => {
   config = modifyAndroidManifest(config, props);
   config = modifyStringsXml(config, props);
+  config = modifyProjectBuildGradle(config, props);
 
   return config;
 };

@@ -5,6 +5,7 @@ import { withIosKakaoSignin } from "./ios/withIosKakaoSignin";
 
 export interface KakaoSigninPluginProps {
   kakaoAppKey: string;
+  overrideKakaoSDKVersion?: string;
 }
 
 const withKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (

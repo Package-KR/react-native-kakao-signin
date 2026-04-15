@@ -358,6 +358,50 @@ const terms = await serviceTerms();
 | `revocable` | `boolean`             | 철회 가능 여부 |
 | `agreedAt`  | `string \| undefined` | 동의 시각      |
 
+## Kakao SDK 버전 오버라이드
+
+기본적으로 Kakao SDK `2.22.0`을 사용합니다. 호스트 앱에서 다른 버전을 사용해야 하는 경우 아래와 같이 오버라이드할 수 있습니다.
+
+### Expo
+
+`app.json`에서 `overrideKakaoSDKVersion`을 지정합니다.
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "@package-kr/react-native-kakao-signin",
+        {
+          "kakaoAppKey": "{KAKAO_APP_KEY}",
+          "overrideKakaoSDKVersion": "2.23.0"
+        }
+      ]
+    ]
+  }
+}
+```
+
+### CLI (iOS)
+
+`ios/Podfile` 상단에 전역변수를 선언합니다.
+
+```ruby
+$KakaoSDKVersion = "2.23.0"
+```
+
+### CLI (Android)
+
+`android/build.gradle`의 `ext` 블록에 속성을 추가합니다.
+
+```gradle
+buildscript {
+    ext {
+        kakaoSdkVersion = "2.23.0"
+    }
+}
+```
+
 ## 테스트 환경
 
 | 환경 | 패키지 버전 | RN 버전 | KakaoSDK 버전 | 마지막 테스트 | 동작 여부 |
