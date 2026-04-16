@@ -4,7 +4,7 @@ PODS:
   - hermes-engine (250829098.0.10):
     - hermes-engine/Pre-built (= 250829098.0.10)
   - hermes-engine/Pre-built (250829098.0.10)
-  - kakao-login (2.1.0):
+  - kakao-signin (2.1.0):
     - hermes-engine
     - KakaoSDKAuth (= 2.22.0)
     - KakaoSDKCommon (= 2.22.0)
@@ -82,7 +82,7 @@ PODS:
     - React-utils
     - ReactNativeDependencies
     - Yoga
-  - React-Core-prebuilt (0.85.0):
+  - React-Core-prebuilt (0.85.1):
     - ReactNativeDependencies
   - React-Core/CoreModulesHeaders (0.85.1):
     - hermes-engine
@@ -1858,7 +1858,7 @@ PODS:
 DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
-  - "kakao-login (from `../node_modules/@package-kr/react-native-kakao-signin`)"
+  - "kakao-signin (from `../node_modules/@package-kr/react-native-kakao-signin`)"
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
   - RCTSwiftUI (from `../node_modules/react-native/ReactApple/RCTSwiftUI`)
@@ -1946,7 +1946,7 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v250829098.0.10
-  kakao-login:
+  kakao-signin:
     :path: "../node_modules/@package-kr/react-native-kakao-signin"
   RCTDeprecation:
     :path: "../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
@@ -2096,8 +2096,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
   FBLazyVector: ed7eadee1965b0b918ca9d0f2c2328f7eb3fd095
-  hermes-engine: f8f469e34b13583ab5fdccc9cfe15277ede556a6
-  kakao-login: 2f7e39da1e5cf0cbc31328b7d1d98330d67a0d61
+  hermes-engine: 3de176c3227350515c26811dea8d02d1e372da24
+  kakao-signin: 5e4fe55c09109e9a56b51a599297b8bdccc83148
   KakaoSDKAuth: 569b377eda622d93d4575240b8031cd658163eef
   KakaoSDKCommon: d57127c339fc79e73aa8b236a4c77211c29924f1
   KakaoSDKUser: 043bcd7e91454ebf3bf64f150c430e6f65f0a08d
@@ -2109,7 +2109,7 @@ SPEC CHECKSUMS:
   React: 6dbd7825a18782848e8c62f1feb16b344cb17ac6
   React-callinvoker: 90c70d14c7ca646fdae3e25e8d9fbb0fbb20459c
   React-Core: 9dce76263f670de254e896f317676e7e95369ac2
-  React-Core-prebuilt: 56555a77140f224fa8c5b94d9de14d7eb35d7f50
+  React-Core-prebuilt: 1cc16c6dade61eea9d12ec6753adad24ea5600a3
   React-CoreModules: b9fadb43261b88cb0d3a2d59808603567e995095
   React-cxxreact: 6b36616248fea28ce6dfbffcf09322321eb96186
   React-debug: 8f85c5da52e386c83482e45744f6e61b39b9493d
@@ -2171,7 +2171,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 52da2413bc956c40a4de19ad32a92b87248f7ce8
   ReactCodegen: aac672d7021359dc55fbd6d63f56192651664f09
   ReactCommon: 66763e5bd1b778828ff6cb82d771b7162a5215c2
-  ReactNativeDependencies: 79e1ac29df31e2ad86b17b4ebca37ad27cf60918
+  ReactNativeDependencies: 6ba36fc15682c188ed6a2bb58ea055d4b4a6359f
   Yoga: b1085f68c014785350a2afdc95eaef0d49f23ccb
 
 PODFILE CHECKSUM: 810e1262f525112064472b6f35464da75ab528b8

@@ -7,7 +7,7 @@ package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 kakao_sdk_version = "2.22.0"
 
 Pod::Spec.new do |s|
-  s.name         = "kakao-login"
+  s.name         = "kakao-signin"
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = "https://github.com/Package-KR/react-native-kakao-signin"
