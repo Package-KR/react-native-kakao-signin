@@ -23,5 +23,10 @@
     "@types/react": "~19.2.14",
     "typescript": "~6.0.2"
   },
+  "overrides": {
+    "@xmldom/xmldom": "0.9.10",
+    "postcss": "8.5.10",
+    "uuid": "14.0.0"
+  },
   "private": true
 }

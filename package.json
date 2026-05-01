@@ -26,6 +26,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "overrides": {
+    "@xmldom/xmldom": "0.9.10",
+    "uuid": "14.0.0"
+  },
   "keywords": [
     "react-native",
     "kakao",
