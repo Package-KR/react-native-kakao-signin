@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@package-kr/react-native-kakao-signin": "file:../..",
-    "expo": "~54.0.34",
-    "expo-router": "~6.0.23",
-    "expo-status-bar": "~3.0.9",
+    "expo": "~55.0.19",
+    "expo-router": "~55.0.13",
+    "expo-status-bar": "~55.0.5",
     "react": "19.2.5",
     "react-native": "0.85.2",
     "react-native-gesture-handler": "~2.31.1",
