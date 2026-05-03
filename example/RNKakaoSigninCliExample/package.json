@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "@package-kr/react-native-kakao-signin": "file:../..",
-    "react": "19.2.3",
-    "react-native": "0.85.1",
+    "react": "19.2.5",
+    "react-native": "0.85.2",
     "react-native-safe-area-context": "^5.7.0"
   },
   "devDependencies": {
@@ -24,12 +24,12 @@
     "@react-native/metro-config": "0.85.1",
     "@react-native/typescript-config": "0.85.1",
     "@types/react": "^19.2.14",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "fast-xml-parser": "5.7.0"
   },
   "engines": {
-    "node": ">= 24.14.1"
+    "node": ">= 24.15.0"
   }
 }
