@@ -78,7 +78,7 @@ jobs:
 
       - name: Install pods
         working-directory: example/RNKakaoSigninCliExample/ios
-        run: pod install
+        run: pod update React-Core-prebuilt ReactNativeDependencies hermes-engine --no-repo-update
 
       - name: Build iOS
         working-directory: example/RNKakaoSigninCliExample/ios

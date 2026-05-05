@@ -93,7 +93,7 @@ jobs:
           git checkout -b "$branch"
           git add package.json package-lock.json
           git commit -m "chore(release): ${version}"
-          git push origin "$branch"
+          git push --force-with-lease origin "$branch"
 
           echo "Create PR: https://github.com/${GITHUB_REPOSITORY}/pull/new/${branch}"
 
