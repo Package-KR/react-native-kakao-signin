@@ -7,12 +7,14 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
   id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    # 릴리스 커밋이 다시 워크플로우를 트리거하지 않도록 방지합니다.
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
 
     steps:
       # 릴리스 계산과 태그 생성을 위해 전체 git 히스토리를 가져옵니다.
@@ -39,23 +41,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # package.json 버전에 해당하는 태그가 없으면 릴리스 PR이 머지된 상태로 보고 배포합니다.
-      - name: Check current version tag
-        id: current_version
-        run: |
-          version="v$(node -p "require('./package.json').version")"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
-          if git rev-parse "$version" >/dev/null 2>&1; then
-            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
       # 마지막 태그 이후 커밋 메시지를 읽어 major/minor/patch 여부를 계산합니다.
       - name: Determine release type
         id: release_type
-        if: ${{ steps.current_version.outputs.tag_exists == 'true' }}
         run: |
           last_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
 
@@ -79,39 +67,31 @@ jobs:
 
       # 배포 대상 커밋이 없으면 릴리스 없이 워크플로우를 종료합니다.
       - name: Stop when no release is needed
-        if: ${{ steps.current_version.outputs.tag_exists == 'true' && steps.release_type.outputs.release_type == '' }}
+        if: ${{ steps.release_type.outputs.release_type == '' }}
         run: echo "No releasable commits found."
 
-      # 계산된 타입에 맞춰 버전을 올리고, main 직접 push 대신 릴리스 브랜치를 생성합니다.
-      - name: Create release branch
-        if: ${{ steps.current_version.outputs.tag_exists == 'true' && steps.release_type.outputs.release_type != '' }}
+      # 계산된 타입에 맞춰 버전을 올리고, 릴리스 커밋과 태그를 생성하여 push합니다.
+      - name: Bump version and push
+        if: ${{ steps.release_type.outputs.release_type != '' }}
+        id: version
         run: |
           npm version "${{ steps.release_type.outputs.release_type }}" --no-git-tag-version
           version="v$(node -p "require('./package.json').version")"
-          branch="release/${version}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
-          git checkout -b "$branch"
           git add package.json package-lock.json
-          git commit -m "chore(release): ${version}"
-          git push --force-with-lease origin "$branch"
-
-          echo "Create PR: https://github.com/${GITHUB_REPOSITORY}/pull/new/${branch}"
-
-      # 릴리스 PR이 머지되어 package.json 버전 태그가 없으면 태그를 생성합니다.
-      - name: Create release tag
-        if: ${{ steps.current_version.outputs.tag_exists == 'false' && contains(github.event.head_commit.message, 'chore(release):') }}
-        run: |
-          git tag -a "${{ steps.current_version.outputs.version }}" -m "Release ${{ steps.current_version.outputs.version }}"
-          git push origin "${{ steps.current_version.outputs.version }}"
+          git commit -m "chore(release): ${version} [skip ci]"
+          git tag -a "$version" -m "Release $version"
+          git push origin HEAD:main --follow-tags
 
       # GitHub Releases 화면에 자동 생성 노트를 포함한 릴리스를 만듭니다.
       - name: Create GitHub release
-        if: ${{ steps.current_version.outputs.tag_exists == 'false' && contains(github.event.head_commit.message, 'chore(release):') }}
-        run: gh release create "${{ steps.current_version.outputs.version }}" --generate-notes
+        if: ${{ steps.release_type.outputs.release_type != '' }}
+        run: gh release create "${{ steps.version.outputs.version }}" --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Trusted Publishing을 이용해 npm 레지스트리에 최종 배포합니다.
       - name: Publish to npm
-        if: ${{ steps.current_version.outputs.tag_exists == 'false' && contains(github.event.head_commit.message, 'chore(release):') }}
+        if: ${{ steps.release_type.outputs.release_type != '' }}
         run: npm publish --access public --provenance
