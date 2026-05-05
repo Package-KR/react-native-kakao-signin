@@ -1,4 +1,4 @@
-package com.rnkakaosignincliexample
+package kr.packagekr.kakao.signin
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

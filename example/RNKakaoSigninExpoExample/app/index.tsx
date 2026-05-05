@@ -59,16 +59,38 @@ const PROFILE_KEY_ORDER: (keyof KakaoProfile)[] = [
 function sortedStringify(data: object, keyOrder: string[]): string {
   const sorted: Record<string, any> = {};
   for (const key of keyOrder) {
-    if (key in data) {
-      sorted[key] = (data as any)[key] ?? null;
+    const value = (data as any)[key];
+
+    if (value != null) {
+      sorted[key] = value;
     }
   }
   for (const key of Object.keys(data)) {
-    if (!(key in sorted)) {
-      sorted[key] = (data as any)[key] ?? null;
+    const value = (data as any)[key];
+
+    if (!(key in sorted) && value != null) {
+      sorted[key] = value;
     }
   }
   return JSON.stringify(sorted, null, 2);
+}
+
+function errorStringify(error: any): string {
+  const body: Record<string, any> = {};
+
+  if (error?.code != null) {
+    body.code = error.code;
+  }
+
+  if (error?.message != null) {
+    body.message = error.message;
+  }
+
+  if (error?.sdkMessage != null) {
+    body.sdkMessage = error.sdkMessage;
+  }
+
+  return JSON.stringify(body, null, 2);
 }
 
 export default function LoginScreen() {
@@ -82,7 +104,7 @@ export default function LoginScreen() {
       setIsLoggedIn(true);
       setResponseText(sortedStringify(token, TOKEN_KEY_ORDER));
     } catch (e: any) {
-      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
+      setResponseText(errorStringify(e));
     }
   };
 
@@ -91,7 +113,7 @@ export default function LoginScreen() {
       const p = await getProfile();
       setResponseText(sortedStringify(p, PROFILE_KEY_ORDER));
     } catch (e: any) {
-      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
+      setResponseText(errorStringify(e));
     }
   };
 
@@ -101,7 +123,7 @@ export default function LoginScreen() {
       setIsLoggedIn(false);
       setResponseText('');
     } catch (e: any) {
-      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
+      setResponseText(errorStringify(e));
     }
   };
 
