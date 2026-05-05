@@ -63,18 +63,45 @@ function sortedStringify(data: object, keyOrder: string[]): string {
   const sorted: Record<string, any> = {};
   // keyOrder에 정의된 순서대로 먼저 넣고
   for (const key of keyOrder) {
-    if (key in data) {
-      sorted[key] = (data as any)[key] ?? null;
+    const value = (data as any)[key];
+
+    if (value != null) {
+      sorted[key] = value;
     }
   }
 
   // keyOrder에 없는 키는 뒤에 추가
   for (const key of Object.keys(data)) {
-    if (!(key in sorted)) {
-      sorted[key] = (data as any)[key] ?? null;
+    const value = (data as any)[key];
+
+    if (!(key in sorted) && value != null) {
+      sorted[key] = value;
     }
   }
   return JSON.stringify(sorted, null, 2);
+}
+
+// 에러 응답 변환
+function errorStringify(error: any): string {
+  const body: Record<string, any> = {};
+
+  if (error?.code != null) {
+    body.code = error.code;
+  }
+
+  if (error?.message != null) {
+    body.message = error.message;
+  }
+
+  if (error?.sdkMessage != null) {
+    body.sdkMessage = error.sdkMessage;
+  }
+
+  return JSON.stringify(
+    body,
+    null,
+    2
+  );
 }
 
 function LoginScreen() {
@@ -88,7 +115,7 @@ function LoginScreen() {
       setIsLoggedIn(true);
       setResponseText(sortedStringify(token, TOKEN_KEY_ORDER));
     } catch (e: any) {
-      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
+      setResponseText(errorStringify(e));
     }
   };
 
@@ -97,7 +124,7 @@ function LoginScreen() {
       const p = await getProfile();
       setResponseText(sortedStringify(p, PROFILE_KEY_ORDER));
     } catch (e: any) {
-      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
+      setResponseText(errorStringify(e));
     }
   };
 
@@ -107,7 +134,7 @@ function LoginScreen() {
       setIsLoggedIn(false);
       setResponseText('');
     } catch (e: any) {
-      setResponseText(JSON.stringify({ error: e.code, message: e.message }, null, 2));
+      setResponseText(errorStringify(e));
     }
   };
 

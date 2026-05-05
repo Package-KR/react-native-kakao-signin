@@ -9,9 +9,12 @@ const config = getDefaultConfig(projectRoot);
 const escape = p => p.replace(/[/\\]/g, '[/\\\\]');
 
 config.watchFolders = [packageRoot];
+config.resolver.disableHierarchicalLookup = true;
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, 'node_modules')];
 config.resolver.extraNodeModules = {
   '@package-kr/react-native-kakao-signin': packageRoot,
+  react: path.resolve(projectRoot, 'node_modules/react'),
+  'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
 };
 config.resolver.blockList = [
   new RegExp(
