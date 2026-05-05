@@ -101,6 +101,7 @@ yarn-error.log
 
 # references
 references/
+래퍼런스/
 
 # Plugin build output
 plugin/build/
