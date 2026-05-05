@@ -65,18 +65,34 @@ const modifyAppDelegate: ConfigPlugin<KakaoSigninPluginProps> = (
 
     // import 추가
     if (!contents.includes("import KakaoSDKAuth")) {
-      config.modResults.contents = config.modResults.contents.replace(
-        /import Expo\n/,
-        "import Expo\nimport KakaoSDKAuth\n"
+      const nextContents = config.modResults.contents.replace(
+        /(import .+\n)(?!import )/,
+        "$1import KakaoSDKAuth\n"
       );
+
+      if (nextContents === config.modResults.contents) {
+        throw new Error(
+          "[@package-kr/react-native-kakao-signin] Unable to add KakaoSDKAuth import to AppDelegate.swift"
+        );
+      }
+
+      config.modResults.contents = nextContents;
     }
 
     // openURL 메서드에 카카오 URL 처리 추가
-    if (!contents.includes("AuthApi.isKakaoTalkLoginUrl")) {
-      config.modResults.contents = config.modResults.contents.replace(
+    if (!config.modResults.contents.includes("AuthApi.isKakaoTalkLoginUrl")) {
+      const nextContents = config.modResults.contents.replace(
         /(open url: URL,\n\s*options: \[UIApplication\.OpenURLOptionsKey: Any\] = \[:\]\n\s*\) -> Bool \{)\n\s*(return )/,
         `$1\n    if AuthApi.isKakaoTalkLoginUrl(url) {\n      return AuthController.handleOpenUrl(url: url)\n    }\n    $2`
       );
+
+      if (nextContents === config.modResults.contents) {
+        throw new Error(
+          "[@package-kr/react-native-kakao-signin] Unable to add Kakao openURL handler to AppDelegate.swift"
+        );
+      }
+
+      config.modResults.contents = nextContents;
     }
 
     return config;
