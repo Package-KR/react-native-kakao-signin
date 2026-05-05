@@ -239,20 +239,86 @@ const terms = await serviceTerms();
 
 ## Methods
 
-| 메서드                    | 설명                                                                                 | Returns                           |
-| ------------------------- | ------------------------------------------------------------------------------------ | --------------------------------- |
-| `login()`                 | 카카오톡으로 로그인합니다. 카카오톡 미설치 시 카카오계정 로그인으로 자동 전환됩니다. | `Promise<KakaoOAuthToken>`        |
-| `loginWithKakaoAccount()` | 카카오계정으로 로그인합니다.                                                         | `Promise<KakaoOAuthToken>`        |
-| `logout()`                | 로그아웃합니다.                                                                      | `Promise<string>`                 |
-| `unlink()`                | 카카오 계정 연결을 해제합니다.                                                       | `Promise<string>`                 |
-| `getProfile()`            | 사용자 프로필을 조회합니다.                                                          | `Promise<KakaoProfile>`           |
-| `getAccessToken()`        | 현재 저장된 액세스 토큰을 조회합니다.                                                | `Promise<KakaoAccessTokenInfo>`   |
-| `shippingAddresses()`     | 사용자 배송주소 목록을 조회합니다.                                                   | `Promise<KakaoShippingAddresses>` |
-| `serviceTerms()`          | 서비스 약관 동의 내역을 조회합니다.                                                  | `Promise<KakaoServiceTerms>`      |
+| 메서드                    | 설명                                                                                 | Returns                                 |
+| ------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------- |
+| `login()`                 | 카카오톡으로 로그인합니다. 카카오톡 미설치 시 카카오계정 로그인으로 자동 전환됩니다. | `Promise<KakaoOAuthToken>`              |
+| `loginWithKakaoAccount()` | 카카오계정으로 로그인합니다.                                                         | `Promise<KakaoOAuthToken>`              |
+| `logout()`                | 로그아웃합니다.                                                                      | `Promise<boolean>`                      |
+| `unlink()`                | 카카오 계정 연결을 해제합니다.                                                       | `Promise<boolean>`                      |
+| `getProfile()`            | 사용자 프로필을 조회합니다.                                                          | `Promise<KakaoProfile>`                 |
+| `getAccessToken()`        | 현재 저장된 액세스 토큰을 조회합니다.                                                | `Promise<KakaoAccessTokenInfo \| null>` |
+| `shippingAddresses()`     | 사용자 배송주소 목록을 조회합니다.                                                   | `Promise<KakaoShippingAddresses>`       |
+| `serviceTerms()`          | 서비스 약관 동의 내역을 조회합니다.                                                  | `Promise<KakaoServiceTerms>`            |
+
+---
+
+## Error Handling
+
+네이티브 설정, SDK 초기화, 로그인, API 호출 중 오류가 발생하면 `Promise`가 reject됩니다.
+
+이 라이브러리는 Kakao SDK 원문 오류를 그대로 `message`에 넣지 않고, 아래 구조로 정리해서 전달합니다.
+
+```ts
+{
+  code: 'KAKAO_INVALID_APP_KEY',
+  message: 'The Kakao native app key is invalid. Please check your Kakao app key configuration.',
+  sdkMessage: 'invalid_client ...',
+}
+```
+
+| 필드         | 설명                                      |
+| ------------ | ----------------------------------------- |
+| `code`       | 앱에서 분기 처리하기 위한 안정적인 에러 코드 |
+| `message`    | 라이브러리가 제공하는 기본 영어 원인/조치 메시지 |
+| `sdkMessage` | Kakao SDK 또는 네이티브에서 전달된 원문 메시지 |
+
+`sdkMessage`는 SDK가 원문 메시지를 제공할 때만 포함됩니다. 사용자에게 그대로 노출하기보다는 개발 중 설정 문제를 확인하는 용도로 사용하는 것을 권장합니다.
 
 ---
 
 ## Types
+
+아래 타입 표는 필드가 포함될 때의 값 타입을 기준으로 설명합니다. 선택 필드는 값이 없으면 `null`로 내려오지 않고 응답에서 생략됩니다.
+
+### `KakaoSigninError`
+
+| 필드         | 타입                  | 설명                                           |
+| ------------ | --------------------- | ---------------------------------------------- |
+| `code`       | `KakaoErrorCode`      | 네이티브 모듈에서 전달한 안정적인 에러 코드    |
+| `message`    | `string`              | 라이브러리가 제공하는 영어 원인/조치 메시지    |
+| `sdkMessage` | `string \| undefined` | Kakao SDK 또는 네이티브에서 전달된 원문 메시지 |
+
+### `KakaoErrorCode`
+
+| 코드                                 | 설명                                        |
+| ------------------------------------ | ------------------------------------------- |
+| `KAKAO_ACTIVITY_DOES_NOT_EXIST`      | 현재 Activity 없음                          |
+| `KAKAO_ACCESS_DENIED`                | 사용자 취소 또는 접근 거부                  |
+| `KAKAO_API_ERROR`                    | 카카오 API 오류                             |
+| `KAKAO_AUTH_ERROR`                   | 카카오 인증 오류                            |
+| `KAKAO_BAD_PARAMETER`                | 잘못된 파라미터                             |
+| `KAKAO_CANCELLED`                    | 사용자 취소                                 |
+| `KAKAO_CLIENT_ERROR`                 | 클라이언트 오류                             |
+| `KAKAO_ERROR`                        | 일반 오류                                   |
+| `KAKAO_FORBIDDEN`                    | 권한 부족                                   |
+| `KAKAO_ILLEGAL_STATE`                | 잘못된 상태                                 |
+| `KAKAO_INVALID_APP_KEY`              | 앱 키 설정 오류                             |
+| `KAKAO_INVALID_BUNDLE_ID`            | iOS 번들 ID 또는 Android 패키지명 설정 오류 |
+| `KAKAO_INVALID_CLIENT`               | 클라이언트 설정 오류                        |
+| `KAKAO_INVALID_GRANT`                | 인가 정보 오류                              |
+| `KAKAO_INVALID_REQUEST`              | 잘못된 로그인 요청                          |
+| `KAKAO_INVALID_SCOPE`                | 잘못된 동의 항목                            |
+| `KAKAO_INVALID_URL_SCHEME`           | URL scheme 설정 오류                        |
+| `KAKAO_LOGIN_REQUIRED`               | 로그인 권한 필요                            |
+| `KAKAO_MISCONFIGURED`                | 카카오 플랫폼 설정 오류                     |
+| `KAKAO_NOT_SUPPORTED`                | 지원하지 않는 기능                          |
+| `KAKAO_PROFILE_NOT_FOUND`            | 프로필 정보 없음                            |
+| `KAKAO_RATE_LIMIT`                   | 요청 제한 초과                              |
+| `KAKAO_SERVER_ERROR`                 | 카카오 서버 오류                            |
+| `KAKAO_SHIPPING_ADDRESSES_NOT_FOUND` | 배송지 정보 없음                            |
+| `KAKAO_TOKEN_EXPIRED`                | 토큰 만료                                   |
+| `KAKAO_TOKEN_NOT_FOUND`              | 토큰 없음                                   |
+| `KAKAO_UNKNOWN_ERROR`                | 알 수 없는 오류                             |
 
 ### `KakaoOAuthToken`
 
@@ -260,61 +326,61 @@ const terms = await serviceTerms();
 | ----------------------- | ------------------ | ------------------------ |
 | `accessToken`           | `string`           | 액세스 토큰              |
 | `refreshToken`          | `string`           | 리프레시 토큰            |
-| `idToken`               | `string \| null`   | ID 토큰 (OpenID Connect) |
+| `idToken`               | `string`           | ID 토큰 (OpenID Connect) |
 | `accessTokenExpiresAt`  | `string`           | 액세스 토큰 만료 시각    |
 | `refreshTokenExpiresAt` | `string`           | 리프레시 토큰 만료 시각  |
-| `scopes`                | `string[] \| null` | 인증된 스코프 목록       |
+| `scopes`                | `string[]`         | 인증된 스코프 목록       |
 
 ### `KakaoProfile`
 
 | 필드                            | 타입              | 설명                              |
 | ------------------------------- | ----------------- | --------------------------------- |
-| `id`                            | `number \| null`  | 사용자 ID                         |
-| `nickname`                      | `string \| null`  | 닉네임                            |
-| `name`                          | `string \| null`  | 이름                              |
-| `email`                         | `string \| null`  | 이메일                            |
-| `profileImageUrl`               | `string \| null`  | 프로필 이미지 URL                 |
-| `thumbnailImageUrl`             | `string \| null`  | 프로필 썸네일 이미지 URL          |
-| `gender`                        | `string \| null`  | 성별                              |
-| `ageRange`                      | `string \| null`  | 연령대                            |
-| `birthday`                      | `string \| null`  | 생일 (MMDD)                       |
-| `birthdayType`                  | `string \| null`  | 생일 타입 (SOLAR/LUNAR)           |
-| `birthyear`                     | `string \| null`  | 출생 연도                         |
-| `phoneNumber`                   | `string \| null`  | 전화번호                          |
-| `isEmailValid`                  | `boolean \| null` | 이메일 유효 여부                  |
-| `isEmailVerified`               | `boolean \| null` | 이메일 인증 여부                  |
-| `isKorean`                      | `boolean \| null` | 한국인 여부                       |
-| `isDefaultImage`                | `boolean \| null` | 기본 프로필 이미지 여부           |
-| `isLeapMonth`                   | `boolean \| null` | 생일 윤달 여부 (Android only)     |
-| `connectedAt`                   | `string \| null`  | 서비스 연결 시각                  |
-| `synchedAt`                     | `string \| null`  | 카카오싱크 로그인 시각            |
-| `ci`                            | `string \| null`  | 연계정보 (iOS only)               |
-| `ciAuthenticatedAt`             | `string \| null`  | CI 발급 시각 (iOS only)           |
-| `legalName`                     | `string \| null`  | 법정 이름                         |
-| `legalBirthDate`                | `string \| null`  | 법정 생년월일                     |
-| `legalGender`                   | `string \| null`  | 법정 성별                         |
-| `emailNeedsAgreement`           | `boolean \| null` | 이메일 제공 동의 필요 여부        |
-| `profileNeedsAgreement`         | `boolean \| null` | 프로필 제공 동의 필요 여부        |
-| `phoneNumberNeedsAgreement`     | `boolean \| null` | 전화번호 제공 동의 필요 여부      |
-| `genderNeedsAgreement`          | `boolean \| null` | 성별 제공 동의 필요 여부          |
-| `ageRangeNeedsAgreement`        | `boolean \| null` | 연령대 제공 동의 필요 여부        |
-| `birthdayNeedsAgreement`        | `boolean \| null` | 생일 제공 동의 필요 여부          |
-| `birthyearNeedsAgreement`       | `boolean \| null` | 출생 연도 제공 동의 필요 여부     |
-| `isKoreanNeedsAgreement`        | `boolean \| null` | 한국인 여부 제공 동의 필요 여부   |
-| `profileNicknameNeedsAgreement` | `boolean \| null` | 닉네임 제공 동의 필요 여부        |
-| `profileImageNeedsAgreement`    | `boolean \| null` | 프로필 이미지 제공 동의 필요 여부 |
-| `nameNeedsAgreement`            | `boolean \| null` | 이름 제공 동의 필요 여부          |
-| `ciNeedsAgreement`              | `boolean \| null` | CI 제공 동의 필요 여부 (iOS only) |
-| `legalNameNeedsAgreement`       | `boolean \| null` | 법정 이름 제공 동의 필요 여부     |
-| `legalBirthDateNeedsAgreement`  | `boolean \| null` | 법정 생년월일 제공 동의 필요 여부 |
-| `legalGenderNeedsAgreement`     | `boolean \| null` | 법정 성별 제공 동의 필요 여부     |
+| `id`                            | `string`          | 사용자 ID                         |
+| `nickname`                      | `string`          | 닉네임                            |
+| `name`                          | `string`          | 이름                              |
+| `email`                         | `string`          | 이메일                            |
+| `profileImageUrl`               | `string`          | 프로필 이미지 URL                 |
+| `thumbnailImageUrl`             | `string`          | 프로필 썸네일 이미지 URL          |
+| `gender`                        | `string`          | 성별                              |
+| `ageRange`                      | `string`          | 연령대                            |
+| `birthday`                      | `string`          | 생일 (MMDD)                       |
+| `birthdayType`                  | `string`          | 생일 타입 (SOLAR/LUNAR)           |
+| `birthyear`                     | `string`          | 출생 연도                         |
+| `phoneNumber`                   | `string`          | 전화번호                          |
+| `isEmailValid`                  | `boolean`         | 이메일 유효 여부                  |
+| `isEmailVerified`               | `boolean`         | 이메일 인증 여부                  |
+| `isKorean`                      | `boolean`         | 한국인 여부                       |
+| `isDefaultImage`                | `boolean`         | 기본 프로필 이미지 여부           |
+| `isLeapMonth`                   | `boolean`         | 생일 윤달 여부 (Android only)     |
+| `connectedAt`                   | `string`          | 서비스 연결 시각                  |
+| `synchedAt`                     | `string`          | 카카오싱크 로그인 시각            |
+| `ci`                            | `string`          | 연계정보 (iOS only)               |
+| `ciAuthenticatedAt`             | `string`          | CI 발급 시각 (iOS only)           |
+| `legalName`                     | `string`          | 법정 이름                         |
+| `legalBirthDate`                | `string`          | 법정 생년월일                     |
+| `legalGender`                   | `string`          | 법정 성별                         |
+| `emailNeedsAgreement`           | `boolean`         | 이메일 제공 동의 필요 여부        |
+| `profileNeedsAgreement`         | `boolean`         | 프로필 제공 동의 필요 여부        |
+| `phoneNumberNeedsAgreement`     | `boolean`         | 전화번호 제공 동의 필요 여부      |
+| `genderNeedsAgreement`          | `boolean`         | 성별 제공 동의 필요 여부          |
+| `ageRangeNeedsAgreement`        | `boolean`         | 연령대 제공 동의 필요 여부        |
+| `birthdayNeedsAgreement`        | `boolean`         | 생일 제공 동의 필요 여부          |
+| `birthyearNeedsAgreement`       | `boolean`         | 출생 연도 제공 동의 필요 여부     |
+| `isKoreanNeedsAgreement`        | `boolean`         | 한국인 여부 제공 동의 필요 여부   |
+| `profileNicknameNeedsAgreement` | `boolean`         | 닉네임 제공 동의 필요 여부        |
+| `profileImageNeedsAgreement`    | `boolean`         | 프로필 이미지 제공 동의 필요 여부 |
+| `nameNeedsAgreement`            | `boolean`         | 이름 제공 동의 필요 여부          |
+| `ciNeedsAgreement`              | `boolean`         | CI 제공 동의 필요 여부 (iOS only) |
+| `legalNameNeedsAgreement`       | `boolean`         | 법정 이름 제공 동의 필요 여부     |
+| `legalBirthDateNeedsAgreement`  | `boolean`         | 법정 생년월일 제공 동의 필요 여부 |
+| `legalGenderNeedsAgreement`     | `boolean`         | 법정 성별 제공 동의 필요 여부     |
 
 ### `KakaoAccessTokenInfo`
 
-| 필드          | 타입     | 설명                    |
-| ------------- | -------- | ----------------------- |
-| `accessToken` | `string` | 액세스 토큰             |
-| `expiresIn`   | `string` | 만료까지 남은 시간 (초) |
+| 필드          | 타입             | 설명                    |
+| ------------- | ---------------- | ----------------------- |
+| `accessToken` | `string`         | 액세스 토큰             |
+| `expiresIn`   | `number`         | 만료까지 남은 시간 (초) |
 
 ### `KakaoShippingAddresses`
 
@@ -326,20 +392,20 @@ const terms = await serviceTerms();
 
 ### `KakaoShippingAddress`
 
-| 필드                   | 타입      | 설명              |
-| ---------------------- | --------- | ----------------- |
-| `id`                   | `string`  | 배송주소 ID       |
-| `name`                 | `string`  | 배송지명          |
-| `isDefault`            | `boolean` | 기본 배송지 여부  |
-| `updatedAt`            | `string`  | 수정 시각         |
-| `type`                 | `string`  | 배송지 타입       |
-| `baseAddress`          | `string`  | 기본 주소         |
-| `detailAddress`        | `string`  | 상세 주소         |
-| `receiverName`         | `string`  | 수령인 이름       |
-| `receiverPhoneNumber1` | `string`  | 수령인 전화번호 1 |
-| `receiverPhoneNumber2` | `string`  | 수령인 전화번호 2 |
-| `zoneNumber`           | `string`  | 우편번호          |
-| `zipCode`              | `string`  | 구 우편번호       |
+| 필드                   | 타입              | 설명              |
+| ---------------------- | ----------------- | ----------------- |
+| `id`                   | `string`          | 배송주소 ID       |
+| `name`                 | `string`          | 배송지명          |
+| `isDefault`            | `boolean`         | 기본 배송지 여부  |
+| `updatedAt`            | `string`          | 수정 시각         |
+| `type`                 | `string`          | 배송지 타입       |
+| `baseAddress`          | `string`          | 기본 주소         |
+| `detailAddress`        | `string`          | 상세 주소         |
+| `receiverName`         | `string`          | 수령인 이름       |
+| `receiverPhoneNumber1` | `string`          | 수령인 전화번호 1 |
+| `receiverPhoneNumber2` | `string`          | 수령인 전화번호 2 |
+| `zoneNumber`           | `string`          | 우편번호          |
+| `zipCode`              | `string`          | 구 우편번호       |
 
 ### `KakaoServiceTerms`
 
@@ -402,7 +468,7 @@ buildscript {
 }
 ```
 
-## 테스트 환경
+## 테스트 환경 (v2.1.1)
 
 | 환경         | 패키지 버전 | RN 버전 | KakaoSDK 버전 | 마지막 테스트 | 동작 여부 |
 | ------------ | ----------- | ------- | ------------- | ------------- | --------- |
