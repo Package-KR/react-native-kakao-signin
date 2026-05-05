@@ -82,8 +82,8 @@ jobs:
         if: ${{ steps.current_version.outputs.tag_exists == 'true' && steps.release_type.outputs.release_type == '' }}
         run: echo "No releasable commits found."
 
-      # 계산된 타입에 맞춰 버전을 올리고, main 직접 push 대신 릴리스 PR을 생성합니다.
-      - name: Create release pull request
+      # 계산된 타입에 맞춰 버전을 올리고, main 직접 push 대신 릴리스 브랜치를 생성합니다.
+      - name: Create release branch
         if: ${{ steps.current_version.outputs.tag_exists == 'true' && steps.release_type.outputs.release_type != '' }}
         run: |
           npm version "${{ steps.release_type.outputs.release_type }}" --no-git-tag-version
@@ -95,14 +95,7 @@ jobs:
           git commit -m "chore(release): ${version}"
           git push origin "$branch"
 
-          gh pr create \
-            --base main \
-            --head "$branch" \
-            --title "chore(release): ${version}" \
-            --body "## Summary
-          - ${version} 릴리스 버전 반영"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "Create PR: https://github.com/${GITHUB_REPOSITORY}/pull/new/${branch}"
 
       # 릴리스 PR이 머지되어 package.json 버전 태그가 없으면 태그를 생성합니다.
       - name: Create release tag
