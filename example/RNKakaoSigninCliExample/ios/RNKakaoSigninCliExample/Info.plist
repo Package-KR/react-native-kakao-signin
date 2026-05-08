@@ -35,8 +35,6 @@
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>KAKAO_APP_KEY</key>
 	<string>a1b5114402b6d9a9a5da7f8264cad6e1</string>
 	<key>LSApplicationQueriesSchemes</key>
@@ -45,6 +43,8 @@
 		<string>kakaokompassauth</string>
 		<string>kakaotalk</string>
 	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

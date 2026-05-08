@@ -1,4 +1,4 @@
-package kr.packagekr.kakao.signin
+package com.rnkakaosignincliexample
 
 import android.app.Application
 import com.facebook.react.PackageList
