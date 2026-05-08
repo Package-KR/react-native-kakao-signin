@@ -24,7 +24,7 @@
         </intent-filter>
       </activity>
 
-      <!-- Kakao -->
+      <!-- Kakao Signin Lib -->
       <activity
         android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
         android:exported="true">

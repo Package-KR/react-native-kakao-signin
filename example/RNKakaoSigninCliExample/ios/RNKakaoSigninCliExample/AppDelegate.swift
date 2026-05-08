@@ -3,7 +3,7 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 
-import KakaoSDKAuth
+import RNKakaoSignin
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -34,20 +34,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     return true
   }
 
-  // 소셜 로그인 앱 리다이렉트 URL 처리 (카카오톡, 네이버 앱 설치 시)
+  // Kakao Signin Lib
   func application(
     _ app: UIApplication,
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
-
-    // 카카오
-    if AuthApi.isKakaoTalkLoginUrl(url) {
-      return AuthController.handleOpenUrl(url: url)
+    if RNKakaoSignin.handleOpen(url) {
+      return true
     }
-    return false
-  }
 
+    return RCTLinkingManager.application(app, open: url, options: options)
+  }
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
