@@ -37,11 +37,14 @@ React Native 전용 카카오 로그인 라이브러리 입니다.
 npm install @package-kr/react-native-kakao-signin
 ```
 
-## iOS
+## React Native CLI
 
-### 1. Info.plist 설정
+### iOS
+
+#### 1. Info.plist 설정
 
 `ios/{ProjectName}/Info.plist`에서 `{KAKAO_APP_KEY}` 부분을 카카오 네이티브 앱 키로 교체해주세요.
+앱 키에는 `kakao` 접두사를 붙이지 않습니다. URL scheme은 기본적으로 `kakao{KAKAO_APP_KEY}` 형식을 사용합니다.
 
 <details>
 <summary>복사용</summary>
@@ -60,10 +63,13 @@ npm install @package-kr/react-native-kakao-signin
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>KAKAO_APP_KEY</key>
 	<string>{KAKAO_APP_KEY}</string>
+	<!-- 선택 사항: 멀티 플랫폼 앱 구현이나 커스텀 URL scheme 사용 시에만 추가합니다. -->
+	<!--
+	<key>KAKAO_APP_SCHEME</key>
+	<string>{CUSTOM_SCHEME}</string>
+	-->
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>kakao{KAKAO_APP_KEY}</string>
@@ -76,8 +82,8 @@ npm install @package-kr/react-native-kakao-signin
 
 ```diff
 	<!-- Info.plist -->
-	<key>CFBundleURLTypes</key>
-	<array>
++ 	<key>CFBundleURLTypes</key>
++	  <array>
 +		<dict>
 +			<key>CFBundleTypeRole</key>
 +			<string>Editor</string>
@@ -88,11 +94,14 @@ npm install @package-kr/react-native-kakao-signin
 +				<string>kakao{KAKAO_APP_KEY}</string>
 +			</array>
 +		</dict>
-	</array>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
++	  </array>
 +	<key>KAKAO_APP_KEY</key>
 +	<string>{KAKAO_APP_KEY}</string>
++	<!-- 선택 사항: 멀티 플랫폼 앱 구현이나 커스텀 URL scheme 사용 시에만 추가합니다. -->
++	<!--
++	<key>KAKAO_APP_SCHEME</key>
++	<string>{CUSTOM_SCHEME}</string>
++	-->
 +	<key>LSApplicationQueriesSchemes</key>
 +	<array>
 +		<string>kakao{KAKAO_APP_KEY}</string>
@@ -101,14 +110,13 @@ npm install @package-kr/react-native-kakao-signin
 +	</array>
 ```
 
-### 2. AppDelegate 설정
+#### 2. AppDelegate 설정
 
 `ios/{ProjectName}/AppDelegate.swift`에 카카오 로그인 URL 처리 코드를 추가합니다.
 
-> **Expo 사용자는 이 단계를 건너뛰세요.** Config Plugin이 자동으로 처리합니다.
-
 ```swift
-import KakaoSDKAuth // 상단에 추가
+import React
+import RNKakaoSignin // 상단에 추가
 
 // AppDelegate 클래스 안에 메서드 추가
 func application(
@@ -116,17 +124,57 @@ func application(
   open url: URL,
   options: [UIApplication.OpenURLOptionsKey: Any] = [:]
 ) -> Bool {
-  if AuthApi.isKakaoTalkLoginUrl(url) {
-    return AuthController.handleOpenUrl(url: url)
+  if RNKakaoSignin.handleOpen(url) {
+    return true
   }
-  return false
+
+  return RCTLinkingManager.application(app, open: url, options: options)
 }
 ```
 
-### 3. CocoaPods 설치
+#### 3. CocoaPods 설치
 
 ```sh
 cd ios && pod install
+```
+
+### Android
+
+#### 1. Redirect URI 설정
+
+`app/src/main/AndroidManifest.xml`에 카카오 리다이렉트 액티비티를 추가합니다.<br/>
+`{KAKAO_APP_KEY}` 부분을 카카오 네이티브 앱 키로 교체해주세요.
+앱 키에는 `kakao` 접두사를 붙이지 않고, `android:scheme`에만 `kakao{KAKAO_APP_KEY}` 형식으로 사용합니다.
+
+사용자 휴대폰에 카카오 앱이 설치되어 있을 경우 로그인 후 앱으로 돌아오기 위한 설정입니다.<br/>
+Android 12(API 31) 이상을 타깃하는 경우 `android:exported="true"` 를 반드시 선언해주셔야 합니다.
+
+```xml
+	  <!-- AndroidManifest.xml -->
+      <activity
+        android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:host="oauth" android:scheme="kakao{KAKAO_APP_KEY}" />
+        </intent-filter>
+      </activity>
+```
+
+#### 2. 카카오 앱 키 설정
+
+`app/src/main/res/values/strings.xml`에 카카오 앱 키를 추가합니다.<br/>
+카카오 SDK가 앱 키를 자동으로 읽어오기 위한 설정입니다.
+
+```diff
+  <resources>
+      <string name="app_name">YourAppName</string>
++     <string name="kakao_app_key">{KAKAO_APP_KEY}</string>
++     <!-- 선택 사항: 멀티 플랫폼 앱 구현이나 커스텀 URL scheme 사용 시에만 추가합니다. -->
++     <!-- <string name="kakao_custom_scheme">{CUSTOM_SCHEME}</string> -->
+  </resources>
 ```
 
 ## Expo
@@ -150,48 +198,31 @@ cd ios && pod install
 }
 ```
 
-> Info.plist 설정과 AppDelegate 코드 주입이 자동으로 처리됩니다.
+> iOS Info.plist/AppDelegate와 Android Manifest/strings.xml/Kakao Maven 저장소 설정이 자동으로 처리됩니다.
+> `kakaoAppKey`에는 `kakao` 접두사를 붙이지 않습니다. 기본 URL scheme은 `kakao{KAKAO_APP_KEY}`로 자동 설정됩니다.
+
+커스텀 URL scheme을 사용하는 경우 `kakaoAppScheme`을 추가합니다.
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "@package-kr/react-native-kakao-signin",
+        {
+          "kakaoAppKey": "{KAKAO_APP_KEY}",
+          "kakaoAppScheme": "{CUSTOM_SCHEME}"
+        }
+      ]
+    ]
+  }
+}
+```
 
 ### 2. 빌드
 
 ```sh
 npx expo run:ios
-```
-
-## Android
-
-### 1. Redirect URI 설정
-
-`app/src/main/AndroidManifest.xml`에 카카오 리다이렉트 액티비티를 추가합니다.<br/>
-`{KAKAO_APP_KEY}` 부분을 카카오 네이티브 앱 키로 교체해주세요.
-
-사용자 휴대폰에 카카오 앱이 설치되어 있을 경우 로그인 후 앱으로 돌아오기 위한 설정입니다.<br/>
-Android 12(API 31) 이상을 타깃하는 경우 `android:exported="true"` 를 반드시 선언해주셔야 합니다.
-
-```xml
-	  <!-- AndroidManifest.xml -->
-      <activity
-        android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
-        android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:host="oauth" android:scheme="kakao{KAKAO_APP_KEY}" />
-        </intent-filter>
-      </activity>
-```
-
-### 2. 카카오 앱 키 설정
-
-`app/src/main/res/values/strings.xml`에 카카오 앱 키를 추가합니다.<br/>
-카카오 SDK가 앱 키를 자동으로 읽어오기 위한 설정입니다.
-
-```diff
-  <resources>
-      <string name="app_name">YourAppName</string>
-+     <string name="kakao_app_key">{KAKAO_APP_KEY}</string>
-  </resources>
 ```
 
 ## Usage
@@ -211,10 +242,10 @@ import {
 } from '@package-kr/react-native-kakao-signin';
 
 // 카카오톡으로 로그인 (카카오톡 미설치 시 카카오계정으로 자동 전환)
-const token = await login();
+const kakaoTalkToken = await login();
 
 // 카카오계정으로 로그인
-const token = await loginWithKakaoAccount();
+const kakaoAccountToken = await loginWithKakaoAccount();
 
 // 로그아웃
 await logout();
@@ -226,7 +257,7 @@ await unlink();
 const profile = await getProfile();
 
 // 토큰 조회
-const token = await getAccessToken();
+const accessTokenInfo = await getAccessToken();
 
 // 배송주소 조회
 const addresses = await shippingAddresses();
@@ -262,17 +293,19 @@ const terms = await serviceTerms();
 {
   code: 'KAKAO_INVALID_APP_KEY',
   message: 'The Kakao native app key is invalid. Please check your Kakao app key configuration.',
-  sdkMessage: 'invalid_client ...',
+  userInfo: {
+    sdkMessage: 'invalid_client ...',
+  },
 }
 ```
 
-| 필드         | 설명                                      |
-| ------------ | ----------------------------------------- |
-| `code`       | 앱에서 분기 처리하기 위한 안정적인 에러 코드 |
-| `message`    | 라이브러리가 제공하는 기본 영어 원인/조치 메시지 |
-| `sdkMessage` | Kakao SDK 또는 네이티브에서 전달된 원문 메시지 |
+| 필드                  | 설명                                             |
+| --------------------- | ------------------------------------------------ |
+| `code`                | 앱에서 분기 처리하기 위한 안정적인 에러 코드     |
+| `message`             | 라이브러리가 제공하는 기본 영어 원인/조치 메시지 |
+| `userInfo.sdkMessage` | Kakao SDK 또는 네이티브에서 전달된 원문 메시지   |
 
-`sdkMessage`는 SDK가 원문 메시지를 제공할 때만 포함됩니다. 사용자에게 그대로 노출하기보다는 개발 중 설정 문제를 확인하는 용도로 사용하는 것을 권장합니다.
+`userInfo.sdkMessage`는 SDK가 원문 메시지를 제공할 때만 포함됩니다. 사용자에게 그대로 노출하기보다는 개발 중 설정 문제를 확인하는 용도로 사용하는 것을 권장합니다.
 
 ---
 
@@ -282,11 +315,12 @@ const terms = await serviceTerms();
 
 ### `KakaoSigninError`
 
-| 필드         | 타입                  | 설명                                           |
-| ------------ | --------------------- | ---------------------------------------------- |
-| `code`       | `KakaoErrorCode`      | 네이티브 모듈에서 전달한 안정적인 에러 코드    |
-| `message`    | `string`              | 라이브러리가 제공하는 영어 원인/조치 메시지    |
-| `sdkMessage` | `string \| undefined` | Kakao SDK 또는 네이티브에서 전달된 원문 메시지 |
+| 필드                  | 타입                  | 설명                                                        |
+| --------------------- | --------------------- | ----------------------------------------------------------- |
+| `code`                | `KakaoErrorCode`      | 네이티브 모듈에서 전달한 안정적인 에러 코드                 |
+| `message`             | `string`              | 라이브러리가 제공하는 영어 원인/조치 메시지                 |
+| `sdkMessage`          | `string \| undefined` | 일부 React Native 런타임에서 노출될 수 있는 SDK 원문 메시지 |
+| `userInfo.sdkMessage` | `string \| undefined` | Kakao SDK 또는 네이티브에서 전달된 원문 메시지              |
 
 ### `KakaoErrorCode`
 
@@ -322,65 +356,65 @@ const terms = await serviceTerms();
 
 ### `KakaoOAuthToken`
 
-| 필드                    | 타입               | 설명                     |
-| ----------------------- | ------------------ | ------------------------ |
-| `accessToken`           | `string`           | 액세스 토큰              |
-| `refreshToken`          | `string`           | 리프레시 토큰            |
-| `idToken`               | `string`           | ID 토큰 (OpenID Connect) |
-| `accessTokenExpiresAt`  | `string`           | 액세스 토큰 만료 시각    |
-| `refreshTokenExpiresAt` | `string`           | 리프레시 토큰 만료 시각  |
-| `scopes`                | `string[]`         | 인증된 스코프 목록       |
+| 필드                    | 타입       | 설명                     |
+| ----------------------- | ---------- | ------------------------ |
+| `accessToken`           | `string`   | 액세스 토큰              |
+| `refreshToken`          | `string`   | 리프레시 토큰            |
+| `idToken`               | `string`   | ID 토큰 (OpenID Connect) |
+| `accessTokenExpiresAt`  | `string`   | 액세스 토큰 만료 시각    |
+| `refreshTokenExpiresAt` | `string`   | 리프레시 토큰 만료 시각  |
+| `scopes`                | `string[]` | 인증된 스코프 목록       |
 
 ### `KakaoProfile`
 
-| 필드                            | 타입              | 설명                              |
-| ------------------------------- | ----------------- | --------------------------------- |
-| `id`                            | `string`          | 사용자 ID                         |
-| `nickname`                      | `string`          | 닉네임                            |
-| `name`                          | `string`          | 이름                              |
-| `email`                         | `string`          | 이메일                            |
-| `profileImageUrl`               | `string`          | 프로필 이미지 URL                 |
-| `thumbnailImageUrl`             | `string`          | 프로필 썸네일 이미지 URL          |
-| `gender`                        | `string`          | 성별                              |
-| `ageRange`                      | `string`          | 연령대                            |
-| `birthday`                      | `string`          | 생일 (MMDD)                       |
-| `birthdayType`                  | `string`          | 생일 타입 (SOLAR/LUNAR)           |
-| `birthyear`                     | `string`          | 출생 연도                         |
-| `phoneNumber`                   | `string`          | 전화번호                          |
-| `isEmailValid`                  | `boolean`         | 이메일 유효 여부                  |
-| `isEmailVerified`               | `boolean`         | 이메일 인증 여부                  |
-| `isKorean`                      | `boolean`         | 한국인 여부                       |
-| `isDefaultImage`                | `boolean`         | 기본 프로필 이미지 여부           |
-| `isLeapMonth`                   | `boolean`         | 생일 윤달 여부 (Android only)     |
-| `connectedAt`                   | `string`          | 서비스 연결 시각                  |
-| `synchedAt`                     | `string`          | 카카오싱크 로그인 시각            |
-| `ci`                            | `string`          | 연계정보 (iOS only)               |
-| `ciAuthenticatedAt`             | `string`          | CI 발급 시각 (iOS only)           |
-| `legalName`                     | `string`          | 법정 이름                         |
-| `legalBirthDate`                | `string`          | 법정 생년월일                     |
-| `legalGender`                   | `string`          | 법정 성별                         |
-| `emailNeedsAgreement`           | `boolean`         | 이메일 제공 동의 필요 여부        |
-| `profileNeedsAgreement`         | `boolean`         | 프로필 제공 동의 필요 여부        |
-| `phoneNumberNeedsAgreement`     | `boolean`         | 전화번호 제공 동의 필요 여부      |
-| `genderNeedsAgreement`          | `boolean`         | 성별 제공 동의 필요 여부          |
-| `ageRangeNeedsAgreement`        | `boolean`         | 연령대 제공 동의 필요 여부        |
-| `birthdayNeedsAgreement`        | `boolean`         | 생일 제공 동의 필요 여부          |
-| `birthyearNeedsAgreement`       | `boolean`         | 출생 연도 제공 동의 필요 여부     |
-| `isKoreanNeedsAgreement`        | `boolean`         | 한국인 여부 제공 동의 필요 여부   |
-| `profileNicknameNeedsAgreement` | `boolean`         | 닉네임 제공 동의 필요 여부        |
-| `profileImageNeedsAgreement`    | `boolean`         | 프로필 이미지 제공 동의 필요 여부 |
-| `nameNeedsAgreement`            | `boolean`         | 이름 제공 동의 필요 여부          |
-| `ciNeedsAgreement`              | `boolean`         | CI 제공 동의 필요 여부 (iOS only) |
-| `legalNameNeedsAgreement`       | `boolean`         | 법정 이름 제공 동의 필요 여부     |
-| `legalBirthDateNeedsAgreement`  | `boolean`         | 법정 생년월일 제공 동의 필요 여부 |
-| `legalGenderNeedsAgreement`     | `boolean`         | 법정 성별 제공 동의 필요 여부     |
+| 필드                            | 타입                              | 설명                              |
+| ------------------------------- | --------------------------------- | --------------------------------- |
+| `id`                            | `string`                          | 사용자 ID                         |
+| `nickname`                      | `string`                          | 닉네임                            |
+| `name`                          | `string`                          | 이름                              |
+| `email`                         | `string`                          | 이메일                            |
+| `profileImageUrl`               | `string`                          | 프로필 이미지 URL                 |
+| `thumbnailImageUrl`             | `string`                          | 프로필 썸네일 이미지 URL          |
+| `gender`                        | `string`                          | 성별                              |
+| `ageRange`                      | `string`                          | 연령대                            |
+| `birthday`                      | `string`                          | 생일 (MMDD)                       |
+| `birthdayType`                  | `'solar' \| 'lunar' \| 'unknown'` | 생일 타입                         |
+| `birthyear`                     | `string`                          | 출생 연도                         |
+| `phoneNumber`                   | `string`                          | 전화번호                          |
+| `isEmailValid`                  | `boolean`                         | 이메일 유효 여부                  |
+| `isEmailVerified`               | `boolean`                         | 이메일 인증 여부                  |
+| `isKorean`                      | `boolean`                         | 한국인 여부                       |
+| `isDefaultImage`                | `boolean`                         | 기본 프로필 이미지 여부           |
+| `isLeapMonth`                   | `boolean`                         | 생일 윤달 여부 (Android only)     |
+| `connectedAt`                   | `string`                          | 서비스 연결 시각                  |
+| `synchedAt`                     | `string`                          | 카카오싱크 로그인 시각            |
+| `ci`                            | `string`                          | 연계정보 (iOS only)               |
+| `ciAuthenticatedAt`             | `string`                          | CI 발급 시각 (iOS only)           |
+| `legalName`                     | `string`                          | 법정 이름                         |
+| `legalBirthDate`                | `string`                          | 법정 생년월일                     |
+| `legalGender`                   | `string`                          | 법정 성별                         |
+| `emailNeedsAgreement`           | `boolean`                         | 이메일 제공 동의 필요 여부        |
+| `profileNeedsAgreement`         | `boolean`                         | 프로필 제공 동의 필요 여부        |
+| `phoneNumberNeedsAgreement`     | `boolean`                         | 전화번호 제공 동의 필요 여부      |
+| `genderNeedsAgreement`          | `boolean`                         | 성별 제공 동의 필요 여부          |
+| `ageRangeNeedsAgreement`        | `boolean`                         | 연령대 제공 동의 필요 여부        |
+| `birthdayNeedsAgreement`        | `boolean`                         | 생일 제공 동의 필요 여부          |
+| `birthyearNeedsAgreement`       | `boolean`                         | 출생 연도 제공 동의 필요 여부     |
+| `isKoreanNeedsAgreement`        | `boolean`                         | 한국인 여부 제공 동의 필요 여부   |
+| `profileNicknameNeedsAgreement` | `boolean`                         | 닉네임 제공 동의 필요 여부        |
+| `profileImageNeedsAgreement`    | `boolean`                         | 프로필 이미지 제공 동의 필요 여부 |
+| `nameNeedsAgreement`            | `boolean`                         | 이름 제공 동의 필요 여부          |
+| `ciNeedsAgreement`              | `boolean`                         | CI 제공 동의 필요 여부 (iOS only) |
+| `legalNameNeedsAgreement`       | `boolean`                         | 법정 이름 제공 동의 필요 여부     |
+| `legalBirthDateNeedsAgreement`  | `boolean`                         | 법정 생년월일 제공 동의 필요 여부 |
+| `legalGenderNeedsAgreement`     | `boolean`                         | 법정 성별 제공 동의 필요 여부     |
 
 ### `KakaoAccessTokenInfo`
 
-| 필드          | 타입             | 설명                    |
-| ------------- | ---------------- | ----------------------- |
-| `accessToken` | `string`         | 액세스 토큰             |
-| `expiresIn`   | `number`         | 만료까지 남은 시간 (초) |
+| 필드          | 타입     | 설명                    |
+| ------------- | -------- | ----------------------- |
+| `accessToken` | `string` | 액세스 토큰             |
+| `expiresIn`   | `number` | 만료까지 남은 시간 (초) |
 
 ### `KakaoShippingAddresses`
 
@@ -392,20 +426,20 @@ const terms = await serviceTerms();
 
 ### `KakaoShippingAddress`
 
-| 필드                   | 타입              | 설명              |
-| ---------------------- | ----------------- | ----------------- |
-| `id`                   | `string`          | 배송주소 ID       |
-| `name`                 | `string`          | 배송지명          |
-| `isDefault`            | `boolean`         | 기본 배송지 여부  |
-| `updatedAt`            | `string`          | 수정 시각         |
-| `type`                 | `string`          | 배송지 타입       |
-| `baseAddress`          | `string`          | 기본 주소         |
-| `detailAddress`        | `string`          | 상세 주소         |
-| `receiverName`         | `string`          | 수령인 이름       |
-| `receiverPhoneNumber1` | `string`          | 수령인 전화번호 1 |
-| `receiverPhoneNumber2` | `string`          | 수령인 전화번호 2 |
-| `zoneNumber`           | `string`          | 우편번호          |
-| `zipCode`              | `string`          | 구 우편번호       |
+| 필드                   | 타입                          | 설명              |
+| ---------------------- | ----------------------------- | ----------------- |
+| `id`                   | `string`                      | 배송주소 ID       |
+| `name`                 | `string`                      | 배송지명          |
+| `isDefault`            | `boolean`                     | 기본 배송지 여부  |
+| `updatedAt`            | `string`                      | 수정 시각         |
+| `type`                 | `'old' \| 'new' \| 'unknown'` | 배송지 타입       |
+| `baseAddress`          | `string`                      | 기본 주소         |
+| `detailAddress`        | `string`                      | 상세 주소         |
+| `receiverName`         | `string`                      | 수령인 이름       |
+| `receiverPhoneNumber1` | `string`                      | 수령인 전화번호 1 |
+| `receiverPhoneNumber2` | `string`                      | 수령인 전화번호 2 |
+| `zoneNumber`           | `string`                      | 우편번호          |
+| `zipCode`              | `string`                      | 구 우편번호       |
 
 ### `KakaoServiceTerms`
 
@@ -468,14 +502,14 @@ buildscript {
 }
 ```
 
-## 테스트 환경 (v2.1.1)
+## 테스트 환경
 
-| 환경         | 패키지 버전 | RN 버전 | KakaoSDK 버전 | 마지막 테스트 | 동작 여부 |
-| ------------ | ----------- | ------- | ------------- | ------------- | --------- |
-| CLI iOS      | 2.1.0       | 0.85.0  | 2.22.0        | 2026-04-15    | ✅        |
-| CLI Android  | 2.1.0       | 0.85.0  | 2.22.0        | 2026-04-15    | ✅        |
-| Expo iOS     | 2.1.0       | SDK 54  | 2.22.0        | 2026-04-15    | ✅        |
-| Expo Android | 2.1.0       | SDK 54  | 2.22.0        | 2026-04-15    | ✅        |
+| 환경         | 패키지 버전 | RN / Expo 버전          | KakaoSDK 버전 | 마지막 테스트 | 동작 여부 |
+| ------------ | ----------- | ----------------------- | ------------- | ------------- | --------- |
+| CLI iOS      | 최신 버전   | React Native 0.85.3     | 2.22.0        | 2026-05-08    | ✅        |
+| CLI Android  | 최신 버전   | React Native 0.85.3     | 2.22.0        | 2026-05-08    | ✅        |
+| Expo iOS     | 최신 버전   | Expo SDK 54 / RN 0.81.5 | 2.22.0        | 2026-05-08    | ✅        |
+| Expo Android | 최신 버전   | Expo SDK 54 / RN 0.81.5 | 2.22.0        | 2026-05-08    | ✅        |
 
 ## 라이선스
 
