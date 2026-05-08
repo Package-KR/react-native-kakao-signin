@@ -33,7 +33,7 @@ enum RNKakaoError {
     static let shippingAddressesNotFound = "KAKAO_SHIPPING_ADDRESSES_NOT_FOUND"
     static let tokenExpired = "KAKAO_TOKEN_EXPIRED"
     static let tokenNotFound = "KAKAO_TOKEN_NOT_FOUND"
-    static let unknownLogin = "KAKAO_UNKNOWN_LOGIN"
+    static let unknownError = "KAKAO_UNKNOWN_ERROR"
   }
 
   // 에러 메시지
@@ -78,7 +78,12 @@ enum RNKakaoError {
 
   // 로그인 실패
   static func unknownLogin() -> ParsedError {
-    return make(Code.unknownLogin, Message.unknownLogin)
+    return make(Code.unknownError, Message.unknownLogin)
+  }
+
+  // 설정 누락
+  static func misconfigured() -> ParsedError {
+    return make(Code.misconfigured, Message.misconfigured)
   }
 
   // SDK 에러 변환
@@ -99,6 +104,20 @@ enum RNKakaoError {
     }
 
     return make(Code.defaultError, Message.defaultError, sdkMessage)
+  }
+
+  static func isTerminalLoginError(_ error: ParsedError) -> Bool {
+    return [Code.cancelled, Code.accessDenied].contains(error.code)
+  }
+
+  static func isConfigurationError(_ error: ParsedError) -> Bool {
+    return [
+      Code.invalidAppKey,
+      Code.invalidBundleId,
+      Code.invalidClient,
+      Code.invalidUrlScheme,
+      Code.misconfigured,
+    ].contains(error.code)
   }
 
   // 클라이언트 에러 변환
@@ -123,25 +142,24 @@ enum RNKakaoError {
 
   // API 에러 변환
   private static func resolveApiError(_ reason: ApiFailureReason, _ sdkMessage: String?) -> ParsedError {
-    let lowercased = sdkMessage?.lowercased() ?? ""
-
-    if lowercased.contains("token") {
+    switch reason {
+    case .InvalidAccessToken:
       return make(Code.tokenExpired, Message.tokenExpired, sdkMessage)
-    }
-
-    if lowercased.contains("permission") || lowercased.contains("scope") || lowercased.contains("forbidden") {
+    case .Blocked, .Permission, .InsufficientScope, .RequiredAgeVerification, .UnderAgeLimit, .LowerAgeLimit:
       return make(Code.forbidden, Message.forbidden, sdkMessage)
-    }
-
-    if lowercased.contains("too many") || lowercased.contains("rate") || lowercased.contains("limit") {
+    case .ApiLimitExceed, .TalkSendMessageMonthlyLimitExceed, .TalkSendMessageDailyLimitExceed, .AgeCheckLimitExceed:
       return make(Code.rateLimit, Message.rateLimit, sdkMessage)
-    }
-
-    if lowercased.contains("server") || lowercased.contains("internal") {
+    case .BadParameter:
+      return make(Code.badParameter, Message.badParameter, sdkMessage)
+    case .UnsupportedApi, .DeprecatedApi:
+      return make(Code.notSupported, Message.notSupported, sdkMessage)
+    case .Internal, .ServerTimeout, .UnderMaintenance:
       return make(Code.serverError, Message.serverError, sdkMessage)
+    case .NoSuchApp:
+      return make(Code.invalidAppKey, Message.invalidAppKey, sdkMessage)
+    default:
+      return make(Code.apiError, Message.apiError, sdkMessage)
     }
-
-    return make(Code.apiError, Message.apiError, sdkMessage)
   }
 
   // 인증 에러 변환

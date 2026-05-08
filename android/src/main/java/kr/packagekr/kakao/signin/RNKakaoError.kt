@@ -80,13 +80,17 @@ object RNKakaoError {
     // 에러 응답 변환
     fun reject(promise: Promise, error: Throwable) {
         val parsed = parse(error)
+        rejectParsed(promise, parsed, error)
+    }
+
+    fun rejectParsed(promise: Promise, parsed: ParsedError, cause: Throwable? = null) {
         val userInfo = Arguments.createMap()
 
         parsed.sdkMessage?.let {
             userInfo.putString("sdkMessage", it)
         }
 
-        promise.reject(parsed.code, parsed.message, error, userInfo)
+        promise.reject(parsed.code, parsed.message, cause, userInfo)
     }
 
     // 직접 에러 응답
@@ -106,6 +110,10 @@ object RNKakaoError {
         promise.reject(UNKNOWN, Message.unknownLogin)
     }
 
+    fun rejectMisconfigured(promise: Promise) {
+        promise.reject(MISCONFIGURED, Message.misconfigured)
+    }
+
     // SDK 에러 변환
     fun parse(error: Throwable): ParsedError {
         return when (error) {
@@ -114,6 +122,21 @@ object RNKakaoError {
             is AuthError -> resolveAuthError(error)
             else -> make(ERROR, Message.defaultError, sdkMessage(error))
         }
+    }
+
+    fun isConfigurationError(error: ParsedError): Boolean {
+        return when (error.code) {
+            INVALID_APP_KEY,
+            INVALID_BUNDLE_ID,
+            INVALID_CLIENT,
+            INVALID_URL_SCHEME,
+            MISCONFIGURED -> true
+            else -> false
+        }
+    }
+
+    fun isTerminalLoginError(error: ParsedError): Boolean {
+        return error.code == CANCELLED || error.code == ACCESS_DENIED
     }
 
     // 클라이언트 에러
@@ -177,7 +200,7 @@ object RNKakaoError {
                 }
             }
             AuthErrorCause.InvalidClient ->
-                make(INVALID_CLIENT, Message.invalidClient, sdkMessage)
+                resolveAuthConfigurationError(normalizedDescription, sdkMessage)
             AuthErrorCause.AccessDenied ->
                 make(ACCESS_DENIED, Message.accessDenied, sdkMessage)
             AuthErrorCause.InvalidScope ->
@@ -193,6 +216,19 @@ object RNKakaoError {
             AuthErrorCause.ServerError ->
                 make(SERVER_ERROR, Message.serverError, sdkMessage)
             else -> make(AUTH_ERROR, Message.authError, sdkMessage)
+        }
+    }
+
+    private fun resolveAuthConfigurationError(normalizedDescription: String, sdkMessage: String?): ParsedError {
+        return when {
+            normalizedDescription.contains("package") || normalizedDescription.contains("bundle") ->
+                make(INVALID_BUNDLE_ID, Message.invalidBundleId, sdkMessage)
+            normalizedDescription.contains("scheme") || normalizedDescription.contains("redirect") ->
+                make(INVALID_URL_SCHEME, Message.invalidUrlScheme, sdkMessage)
+            normalizedDescription.contains("client") || normalizedDescription.contains("app key") ->
+                make(INVALID_APP_KEY, Message.invalidAppKey, sdkMessage)
+            else ->
+                make(INVALID_CLIENT, Message.invalidClient, sdkMessage)
         }
     }
 

@@ -11,7 +11,6 @@ apply plugin: "com.facebook.react"
 // TurboModule 코드젠 설정
 react {
     jsRootDir = file("../src")
-    libraryName = "RNKakaoSigninSpec"
     codegenJavaPackageName = "kr.packagekr.kakao.signin"
 }
 
@@ -35,26 +34,20 @@ android {
     }
 }
 
-// 기본 저장소
-repositories {
-    google()
-    mavenCentral()
-}
-
-// 카카오 SDK 저장소
-rootProject.allprojects {
-    repositories {
-        maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' }
-    }
-}
-
 // 의존성
 dependencies {
     def kakaoVersion = getExtOrDefault("kakaoSdkVersion", "2.22.0")
 
-    implementation "com.facebook.react:react-native:+"
+    implementation "com.facebook.react:react-android"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault("kotlinVersion", "2.1.20")}"
 
     implementation "com.kakao.sdk:v2-user:${kakaoVersion}"
-    implementation "com.kakao.sdk:v2-talk:${kakaoVersion}"
+}
+
+rootProject.allprojects {
+    repositories {
+        maven {
+            url "https://devrepo.kakao.com/nexus/content/groups/public/"
+        }
+    }
 }

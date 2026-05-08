@@ -1,7 +1,7 @@
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
-type NativeKakaoOAuthToken = {
+export type NativeKakaoOAuthToken = {
   accessToken: string;
   refreshToken: string;
   accessTokenExpiresAt?: string;
@@ -10,12 +10,12 @@ type NativeKakaoOAuthToken = {
   scopes?: string[];
 };
 
-type NativeKakaoAccessTokenInfo = {
+export type NativeKakaoAccessTokenInfo = {
   accessToken: string;
   expiresIn?: number;
 };
 
-type NativeKakaoProfile = {
+export type NativeKakaoProfile = {
   ageRange?: string;
   ageRangeNeedsAgreement?: boolean;
   birthday?: string;
@@ -57,7 +57,7 @@ type NativeKakaoProfile = {
   thumbnailImageUrl?: string;
 };
 
-type NativeKakaoShippingAddress = {
+export type NativeKakaoShippingAddress = {
   baseAddress?: string;
   detailAddress?: string;
   id?: string;
@@ -72,13 +72,13 @@ type NativeKakaoShippingAddress = {
   zoneNumber?: string;
 };
 
-type NativeKakaoShippingAddresses = {
+export type NativeKakaoShippingAddresses = {
   needsAgreement?: boolean;
   shippingAddresses: NativeKakaoShippingAddress[];
   userId?: string;
 };
 
-type NativeKakaoServiceTerm = {
+export type NativeKakaoServiceTerm = {
   tag: string;
   agreed: boolean;
   required: boolean;
@@ -86,7 +86,7 @@ type NativeKakaoServiceTerm = {
   agreedAt?: string;
 };
 
-type NativeKakaoServiceTerms = {
+export type NativeKakaoServiceTerms = {
   serviceTerms: NativeKakaoServiceTerm[];
   userId?: string;
 };
