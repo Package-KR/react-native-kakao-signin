@@ -1,49 +1,111 @@
-import {
-  type ConfigPlugin,
-  withInfoPlist,
-  withAppDelegate,
-  withXcodeProject,
-} from "@expo/config-plugins";
-import { readFile, writeFile } from "node:fs";
-import type { KakaoSigninPluginProps } from "..";
+import { type ConfigPlugin, withInfoPlist, withAppDelegate, withDangerousMod } from '@expo/config-plugins';
+import { readFile, writeFile } from 'node:fs/promises';
+import type { KakaoSigninPluginProps } from '..';
 
-const KAKAO_SCHEMES = ["kakaokompassauth", "kakaotalk"];
+const KAKAO_SCHEMES = ['kakaokompassauth', 'kakaotalk'];
+const KAKAO_OPEN_URL_MARKER_START = '// @package-kr/react-native-kakao-signin open-url start';
+const KAKAO_OPEN_URL_MARKER_END = '// @package-kr/react-native-kakao-signin open-url end';
+const KAKAO_OPEN_URL_BLOCK_REGEX =
+  /\n?[ \t]*\/\/ @package-kr\/react-native-kakao-signin open-url start[\s\S]*?\/\/ @package-kr\/react-native-kakao-signin open-url end\r?\n?/m;
 
-/**
- * Info.plist에 카카오 URL Scheme, KAKAO_APP_KEY, LSApplicationQueriesSchemes 추가
- */
-const modifyInfoPlist: ConfigPlugin<KakaoSigninPluginProps> = (
-  config,
-  props
-) => {
-  return withInfoPlist(config, (config) => {
-    const kakaoScheme = `kakao${props.kakaoAppKey}`;
+const addSwiftImport = (contents: string, moduleName: string): string => {
+  if (new RegExp(`^\\s*import\\s+${moduleName}\\s*$`, 'm').test(contents)) {
+    return contents;
+  }
 
-    // KAKAO_APP_KEY
+  const nextContents = contents.replace(/(import .+\n)(?!import )/, `$1import ${moduleName}\n`);
+
+  if (nextContents === contents) {
+    throw new Error(`[@package-kr/react-native-kakao-signin] Unable to add ${moduleName} import to AppDelegate.swift`);
+  }
+
+  return nextContents;
+};
+
+const openUrlMethodRegex =
+  /(^[ \t]*(?:(?:public|internal|private|fileprivate|open|override)\s+)*func\s+application\s*\(\s*_\s+\w+\s*:\s*UIApplication\s*,\s*open\s+url\s*:\s*URL\s*,\s*options\s*:\s*\[UIApplication\.OpenURLOptionsKey\s*:\s*Any\](?:\s*=\s*\[:\])?\s*\)\s*->\s*Bool\s*\{)/m;
+
+const createKakaoOpenUrlBlock = (indent: string): string =>
+  [
+    `${indent}${KAKAO_OPEN_URL_MARKER_START}`,
+    `${indent}if RNKakaoSignin.handleOpen(url) {`,
+    `${indent}  return true`,
+    `${indent}}`,
+    `${indent}${KAKAO_OPEN_URL_MARKER_END}`,
+  ].join('\n');
+
+const removeKakaoOpenUrlBlock = (contents: string): string =>
+  contents
+    .replace(KAKAO_OPEN_URL_BLOCK_REGEX, '\n')
+    .replace(
+      /\n?[ \t]*\/\/ @package-kr\/react-native-kakao-signin open-url\r?\n[ \t]*return RNKakaoSignin\.handleOpen(?:Url)?\(url\)\s*\|\|\s*\((.*?)\)/m,
+      '\n    return $1',
+    )
+    .replace(
+      /\n?[ \t]*\/\/ @package-kr\/react-native-kakao-signin open-url\r?\n[ \t]*return RNKakaoSignin\.handleOpen(?:Url)?\(url\)\r?\n?/m,
+      '\n',
+    );
+
+const injectKakaoOpenUrlHandler = (contents: string): string => {
+  const cleanedContents = removeKakaoOpenUrlBlock(contents);
+  const existingMethod = openUrlMethodRegex.exec(cleanedContents);
+
+  if (existingMethod) {
+    return cleanedContents.replace(openUrlMethodRegex, `$1\n${createKakaoOpenUrlBlock('    ')}`);
+  }
+
+  if (!/\bclass\s+AppDelegate\b/.test(cleanedContents)) {
+    throw new Error(
+      '[@package-kr/react-native-kakao-signin] Unable to find AppDelegate class in AppDelegate.swift. Add application(_:open:options:) manually or use a supported Expo AppDelegate template.',
+    );
+  }
+
+  const handler = createKakaoOpenUrlBlock('    ');
+  const openUrlMethod = `  public override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+  ) -> Bool {
+${handler}
+    return super.application(app, open: url, options: options) || RCTLinkingManager.application(app, open: url, options: options)
+  }`;
+
+  return cleanedContents.replace(/\n}\s*$/, `\n\n${openUrlMethod}\n}\n`);
+};
+
+const modifyInfoPlist: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
+  return withInfoPlist(config, config => {
+    const kakaoScheme = props.kakaoAppScheme ?? `kakao${props.kakaoAppKey}`;
+
     config.modResults.KAKAO_APP_KEY = props.kakaoAppKey;
+    config.modResults.KAKAO_APP_SCHEME = kakaoScheme;
 
-    // CFBundleURLTypes - kakao{앱키} scheme 등록
     if (!Array.isArray(config.modResults.CFBundleURLTypes)) {
       config.modResults.CFBundleURLTypes = [];
     }
 
-    const hasKakaoScheme = config.modResults.CFBundleURLTypes.some((item) =>
-      item.CFBundleURLSchemes?.includes(kakaoScheme)
-    );
+    const primaryUrlType = config.modResults.CFBundleURLTypes.find(item => item.CFBundleURLName === 'KAKAO');
 
-    if (!hasKakaoScheme) {
+    if (primaryUrlType) {
+      const schemes = new Set(
+        Array.isArray(primaryUrlType.CFBundleURLSchemes) ? primaryUrlType.CFBundleURLSchemes : [],
+      );
+      schemes.add(kakaoScheme);
+
+      primaryUrlType.CFBundleURLSchemes = Array.from(schemes);
+    } else {
       config.modResults.CFBundleURLTypes.push({
+        CFBundleURLName: 'KAKAO',
         CFBundleURLSchemes: [kakaoScheme],
       });
     }
 
-    // LSApplicationQueriesSchemes - 카카오톡 앱 탐지용
     if (!Array.isArray(config.modResults.LSApplicationQueriesSchemes)) {
       config.modResults.LSApplicationQueriesSchemes = [];
     }
 
     const allSchemes = [kakaoScheme, ...KAKAO_SCHEMES];
-    allSchemes.forEach((scheme) => {
+    allSchemes.forEach(scheme => {
       if (!config.modResults.LSApplicationQueriesSchemes?.includes(scheme)) {
         config.modResults.LSApplicationQueriesSchemes?.push(scheme);
       }
@@ -53,94 +115,60 @@ const modifyInfoPlist: ConfigPlugin<KakaoSigninPluginProps> = (
   });
 };
 
-/**
- * AppDelegate에 카카오 로그인 URL 처리 코드 주입
- */
-const modifyAppDelegate: ConfigPlugin<KakaoSigninPluginProps> = (
-  config,
-  _props
-) => {
-  return withAppDelegate(config, (config) => {
-    const contents = config.modResults.contents;
+const modifyAppDelegate: ConfigPlugin<KakaoSigninPluginProps> = (config, _props) => {
+  return withAppDelegate(config, config => {
+    config.modResults.contents = addSwiftImport(config.modResults.contents, 'React');
+    config.modResults.contents = addSwiftImport(config.modResults.contents, 'RNKakaoSignin');
 
-    // import 추가
-    if (!contents.includes("import KakaoSDKAuth")) {
-      const nextContents = config.modResults.contents.replace(
-        /(import .+\n)(?!import )/,
-        "$1import KakaoSDKAuth\n"
-      );
-
-      if (nextContents === config.modResults.contents) {
-        throw new Error(
-          "[@package-kr/react-native-kakao-signin] Unable to add KakaoSDKAuth import to AppDelegate.swift"
-        );
-      }
-
-      config.modResults.contents = nextContents;
-    }
-
-    // openURL 메서드에 카카오 URL 처리 추가
-    if (!config.modResults.contents.includes("AuthApi.isKakaoTalkLoginUrl")) {
-      const nextContents = config.modResults.contents.replace(
-        /(open url: URL,\n\s*options: \[UIApplication\.OpenURLOptionsKey: Any\] = \[:\]\n\s*\) -> Bool \{)\n\s*(return )/,
-        `$1\n    if AuthApi.isKakaoTalkLoginUrl(url) {\n      return AuthController.handleOpenUrl(url: url)\n    }\n    $2`
-      );
-
-      if (nextContents === config.modResults.contents) {
-        throw new Error(
-          "[@package-kr/react-native-kakao-signin] Unable to add Kakao openURL handler to AppDelegate.swift"
-        );
-      }
-
-      config.modResults.contents = nextContents;
-    }
+    config.modResults.contents = injectKakaoOpenUrlHandler(config.modResults.contents);
 
     return config;
   });
 };
 
-const KAKAO_SDK_VERSION_VARIABLE = "$KakaoSDKVersion";
-const KAKAO_SDK_VERSION_REGEX = /\$KakaoSDKVersion\=.*(\r\n|\r|\n)/g;
+const KAKAO_SDK_VERSION_VARIABLE = '$KakaoSDKVersion';
+const KAKAO_SDK_VERSION_MARKER_START = '# @package-kr/react-native-kakao-signin KakaoSDKVersion start';
+const KAKAO_SDK_VERSION_MARKER_END = '# @package-kr/react-native-kakao-signin KakaoSDKVersion end';
+const KAKAO_SDK_VERSION_REGEX =
+  /\s*# @package-kr\/react-native-kakao-signin KakaoSDKVersion start\r?\n\s*\$KakaoSDKVersion\s*=\s*["'][^"']*["']\r?\n\s*# @package-kr\/react-native-kakao-signin KakaoSDKVersion end\r?\n?/m;
 
-const readFileAsync = (path: string): Promise<string> =>
-  new Promise((resolve, reject) =>
-    readFile(path, "utf8", (err, data) => (err ? reject(err) : resolve(data)))
-  );
-
-const writeFileAsync = (path: string, data: string): Promise<void> =>
-  new Promise((resolve, reject) =>
-    writeFile(path, data, (err) => (err ? reject(err) : resolve()))
-  );
-
-/**
- * Podfile에 $KakaoSDKVersion 변수 주입
- * overrideKakaoSDKVersion이 지정된 경우에만 동작
- */
 const modifyPodfile: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
-  return withXcodeProject(config, async (config) => {
-    const iosPath = config.modRequest.platformProjectRoot;
-    const podfile = await readFileAsync(`${iosPath}/Podfile`);
+  return withDangerousMod(config, [
+    'ios',
+    async config => {
+      const iosPath = config.modRequest.platformProjectRoot;
+      const podfile = await readFile(`${iosPath}/Podfile`, 'utf8');
 
-    // 기존 $KakaoSDKVersion 선언 제거
-    const cleanedPodfile = podfile.replace(KAKAO_SDK_VERSION_REGEX, "");
+      const cleanedPodfile = podfile.replace(KAKAO_SDK_VERSION_REGEX, '');
 
-    if (props.overrideKakaoSDKVersion) {
-      const newPodfile = cleanedPodfile.concat(
-        `${KAKAO_SDK_VERSION_VARIABLE}="${props.overrideKakaoSDKVersion}"\n`
-      );
-      await writeFileAsync(`${iosPath}/Podfile`, newPodfile);
-    } else {
-      await writeFileAsync(`${iosPath}/Podfile`, cleanedPodfile);
-    }
+      if (!props.overrideKakaoSDKVersion) {
+        if (cleanedPodfile !== podfile) {
+          await writeFile(`${iosPath}/Podfile`, cleanedPodfile);
+        }
 
-    return config;
-  });
+        return config;
+      }
+
+      const declaration = [
+        KAKAO_SDK_VERSION_MARKER_START,
+        `${KAKAO_SDK_VERSION_VARIABLE}="${props.overrideKakaoSDKVersion}"`,
+        KAKAO_SDK_VERSION_MARKER_END,
+      ].join('\n');
+      const targetRegex = /^target\s+["'][^"']+["']\s+do\s*$/m;
+      const newPodfile = targetRegex.test(cleanedPodfile)
+        ? cleanedPodfile.replace(targetRegex, `${declaration}\n$&`)
+        : `${declaration}\n${cleanedPodfile}`;
+
+      if (newPodfile !== podfile) {
+        await writeFile(`${iosPath}/Podfile`, newPodfile);
+      }
+
+      return config;
+    },
+  ]);
 };
 
-export const withIosKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (
-  config,
-  props
-) => {
+export const withIosKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
   config = modifyInfoPlist(config, props);
   config = modifyAppDelegate(config, props);
   config = modifyPodfile(config, props);
