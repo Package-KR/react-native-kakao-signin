@@ -4,14 +4,18 @@ import KakaoSDKAuth
 // 공통 헬퍼
 enum RNKakaoSigninHelper {
 
-  // 날짜 포맷터
-  static let dateFormatter: DateFormatter = {
+  // 날짜 포맷 변환
+  static func formatDate(_ date: Date?) -> String? {
+    guard let date = date else {
+      return nil
+    }
+
     let f = DateFormatter()
     f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
     f.locale = Locale(identifier: "en_US_POSIX")
     f.timeZone = TimeZone(secondsFromGMT: 0)
-    return f
-  }()
+    return f.string(from: date)
+  }
 
   // 토큰 변환
   static func tokenToDict(_ token: OAuthToken?) -> [String: Any] {
@@ -20,8 +24,8 @@ enum RNKakaoSigninHelper {
       "accessToken": token.accessToken,
       "refreshToken": token.refreshToken,
       "idToken": token.idToken as Any,
-      "accessTokenExpiresAt": dateFormatter.string(from: token.expiredAt),
-      "refreshTokenExpiresAt": dateFormatter.string(from: token.refreshTokenExpiredAt),
+      "accessTokenExpiresAt": formatDate(token.expiredAt),
+      "refreshTokenExpiresAt": formatDate(token.refreshTokenExpiredAt),
       "scopes": token.scopes as Any,
     ])
   }
@@ -38,11 +42,13 @@ enum RNKakaoSigninHelper {
         return
       }
 
-      if let string = value as? String {
-        let normalized = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !normalized.isEmpty {
-          result[item.key] = normalized
+      if let stringValue = value as? String {
+        let normalized = stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalized.isEmpty {
+          return
         }
+
+        result[item.key] = normalized
         return
       }
 
@@ -85,33 +91,54 @@ enum RNKakaoSigninHelper {
     }
 
     let expectedScheme = appKey.map { "kakao\($0)" }
-
-    for urlType in urlTypes {
+    let normalizedSchemesByType = urlTypes.compactMap { urlType -> (name: String?, schemes: [String])? in
       guard let schemes = urlType["CFBundleURLSchemes"] as? [String] else {
-        continue
+        return nil
       }
 
-      if let urlName = urlType["CFBundleURLName"] as? String,
-         urlName.caseInsensitiveCompare("KAKAO") == .orderedSame,
-         let namedScheme = normalizedScheme(from: schemes.first) {
-        return namedScheme
-      }
+      return (
+        name: urlType["CFBundleURLName"] as? String,
+        schemes: schemes.compactMap(normalizedScheme)
+      )
+    }
 
-      if let expectedScheme,
-         let matchingScheme = schemes.compactMap({ normalizedScheme(from: $0) }).first(where: { $0 == expectedScheme }) {
-        return matchingScheme
-      }
+    if let expectedScheme,
+       let matchingScheme = normalizedSchemesByType
+        .flatMap(\.schemes)
+        .first(where: { $0.caseInsensitiveCompare(expectedScheme) == .orderedSame }) {
+      return matchingScheme
+    }
 
-      if let fallbackScheme = schemes.compactMap({ normalizedScheme(from: $0) }).first(where: { $0.hasPrefix("kakao") }) {
-        return fallbackScheme
-      }
+    if let namedScheme = normalizedSchemesByType
+      .first(where: { $0.name?.caseInsensitiveCompare("KAKAO") == .orderedSame })?
+      .schemes
+      .first {
+      return namedScheme
     }
 
     return nil
   }
 
+  // 카카오 OAuth redirect URL 판정
+  static func isKakaoOAuthRedirect(_ url: URL, appKey: String) -> Bool {
+    let expectedScheme = resolveCustomScheme(appKey: appKey) ?? "kakao\(appKey)"
+
+    return url.scheme?.caseInsensitiveCompare(expectedScheme) == .orderedSame &&
+      url.host?.caseInsensitiveCompare("oauth") == .orderedSame
+  }
+
+  // SDK enum raw value 정규화
+  static func normalizedEnumValue(_ value: String?) -> String? {
+    guard let value = value else {
+      return nil
+    }
+
+    let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    return normalized.isEmpty ? nil : normalized
+  }
+
   // URL scheme 정규화
-  private static func normalizedScheme(from value: String?) -> String? {
+  private static func normalizedScheme(_ value: String?) -> String? {
     guard let value = value else {
       return nil
     }

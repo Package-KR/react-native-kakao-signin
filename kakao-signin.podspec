@@ -8,6 +8,7 @@ kakao_sdk_version = "2.22.0"
 
 Pod::Spec.new do |s|
   s.name         = "kakao-signin"
+  s.module_name  = "RNKakaoSignin"
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = "https://github.com/Package-KR/react-native-kakao-signin"

@@ -5,6 +5,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
 import java.text.SimpleDateFormat
@@ -15,6 +16,16 @@ import java.util.TimeZone
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.user.UserApiClient
 import com.kakao.sdk.auth.TokenManagerProvider
+import com.kakao.sdk.auth.model.OAuthToken
+import com.kakao.sdk.user.model.AgeRange
+import com.kakao.sdk.user.model.BirthdayType
+import com.kakao.sdk.user.model.Gender
+import com.kakao.sdk.user.model.ServiceTerms
+import com.kakao.sdk.user.model.ShippingAddress
+import com.kakao.sdk.user.model.ShippingAddressType
+import com.kakao.sdk.user.model.User
+import com.kakao.sdk.user.model.UserServiceTerms
+import com.kakao.sdk.user.model.UserShippingAddresses
 
 @ReactModule(name = RNKakaoSigninModule.NAME)
 class RNKakaoSigninModule(
@@ -23,10 +34,11 @@ class RNKakaoSigninModule(
 
     companion object {
         const val NAME = "RNKakaoSignin"
+        private val configurationLock = Any()
     }
 
     init {
-        configureKakaoSdk()
+        configureKakaoSdkIfNeeded()
     }
 
     override fun getName(): String {
@@ -34,47 +46,61 @@ class RNKakaoSigninModule(
     }
 
     // SDK 초기화
-    private fun configureKakaoSdk() {
-        if (KakaoSdk.isInitialized) {
-            return
+    private fun configureKakaoSdkIfNeeded(): Boolean {
+        synchronized(configurationLock) {
+            if (KakaoSdk.isInitialized) {
+                return true
+            }
+
+            val appKey = resolveMetaData("com.kakao.sdk.AppKey")
+                ?: resolveString("kakao_app_key")
+                ?: return false
+
+            val customScheme = resolveString("kakao_custom_scheme")
+
+            if (customScheme == null) {
+                KakaoSdk.init(reactApplicationContext, appKey)
+                return true
+            }
+
+            KakaoSdk.init(reactApplicationContext, appKey, customScheme)
+            return true
         }
-
-        val appKey = resolveMetaData("com.kakao.sdk.AppKey")
-            ?: resolveString("kakao_app_key")
-            ?: return
-
-        val customScheme = resolveString("kakao_custom_scheme")
-
-        if (customScheme == null) {
-            KakaoSdk.init(reactApplicationContext, appKey)
-            return
-        }
-
-        KakaoSdk.init(reactApplicationContext, appKey, customScheme)
     }
 
     // 카카오톡 로그인
     @ReactMethod
     override fun login(promise: Promise) {
-        val activity = reactApplicationContext.getCurrentActivity()
+        runConfiguredOnUiThread(promise) {
+            val activity = reactApplicationContext.getCurrentActivity()
 
-        if (activity == null) {
-            RNKakaoError.rejectActivityDoesNotExist(promise)
-            return
-        }
+            if (activity == null) {
+                RNKakaoError.rejectActivityDoesNotExist(promise)
+                return@runConfiguredOnUiThread
+            }
 
-        if (!UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
-            loginWithAccount(promise)
-            return
-        }
+            if (!UserApiClient.instance.isKakaoTalkLoginAvailable(activity)) {
+                loginWithAccount(promise)
+                return@runConfiguredOnUiThread
+            }
 
-        UserApiClient.instance.loginWithKakaoTalk(activity) { token, error ->
-            when {
-                token != null -> promise.resolve(resolveToken(token.accessToken, token.refreshToken, token.idToken, token.scopes))
-                error != null && RNKakaoError.parse(error).code == RNKakaoError.CANCELLED ->
-                    RNKakaoError.reject(promise, error)
-                error != null -> loginWithAccount(promise)
-                else -> RNKakaoError.rejectUnknownLogin(promise)
+            UserApiClient.instance.loginWithKakaoTalk(activity) { token, error ->
+                when {
+                    token != null -> promise.resolve(resolveToken(token))
+                    error != null -> {
+                        val parsedError = RNKakaoError.parse(error)
+
+                        when {
+                            RNKakaoError.isTerminalLoginError(parsedError) ->
+                                RNKakaoError.rejectParsed(promise, parsedError, error)
+                            RNKakaoError.isConfigurationError(parsedError) ->
+                                RNKakaoError.rejectParsed(promise, parsedError, error)
+                            else ->
+                                loginWithAccount(promise)
+                        }
+                    }
+                    else -> RNKakaoError.rejectUnknownLogin(promise)
+                }
             }
         }
     }
@@ -82,54 +108,44 @@ class RNKakaoSigninModule(
     // 카카오계정 로그인
     @ReactMethod
     override fun loginWithKakaoAccount(promise: Promise) {
-        loginWithAccount(promise)
+        runConfiguredOnUiThread(promise) {
+            loginWithAccount(promise)
+        }
     }
 
     // 로그아웃
     @ReactMethod
     override fun logout(promise: Promise) {
-        UserApiClient.instance.logout { error ->
-            if (error != null) {
-                RNKakaoError.reject(promise, error)
-                return@logout
-            }
-
-            promise.resolve(true)
+        runConfigured(promise) {
+            UserApiClient.instance.logout(unitCallback(promise))
         }
     }
 
     // 연결 해제
     @ReactMethod
     override fun unlink(promise: Promise) {
-        UserApiClient.instance.unlink { error ->
-            if (error != null) {
-                RNKakaoError.reject(promise, error)
-                return@unlink
-            }
-
-            promise.resolve(true)
+        runConfigured(promise) {
+            UserApiClient.instance.unlink(unitCallback(promise))
         }
     }
 
     // 액세스 토큰 조회
     @ReactMethod
     override fun getAccessToken(promise: Promise) {
-        val token = TokenManagerProvider.instance.manager.getToken()
+        runConfigured(promise) {
+            val token = TokenManagerProvider.instance.manager.getToken()
 
-        if (token == null) {
-            promise.resolve(null)
-            return
-        }
-
-        UserApiClient.instance.accessTokenInfo { info, error ->
-            if (error != null) {
-                RNKakaoError.reject(promise, error)
-                return@accessTokenInfo
+            if (token == null) {
+                promise.resolve(null)
+                return@runConfigured
             }
 
             val result = Arguments.createMap()
+            val expiresIn = ((token.accessTokenExpiresAt.time - System.currentTimeMillis()) / 1000.0)
+                .coerceAtLeast(0.0)
+
             result.putString("accessToken", token.accessToken)
-            result.putDoubleIfPresent("expiresIn", info?.expiresIn?.toDouble())
+            result.putDouble("expiresIn", expiresIn)
             promise.resolve(result)
         }
     }
@@ -137,127 +153,55 @@ class RNKakaoSigninModule(
     // 프로필 조회
     @ReactMethod
     override fun getProfile(promise: Promise) {
-        UserApiClient.instance.me { user, error ->
-            if (error != null) {
-                RNKakaoError.reject(promise, error)
-                return@me
+        runConfigured(promise) {
+            UserApiClient.instance.me { user, error ->
+                if (error != null) {
+                    RNKakaoError.reject(promise, error)
+                    return@me
+                }
+
+                if (user == null) {
+                    RNKakaoError.rejectProfileNotFound(promise)
+                    return@me
+                }
+
+                promise.resolve(profileToMap(user))
             }
-
-            if (user == null) {
-                RNKakaoError.rejectProfileNotFound(promise)
-                return@me
-            }
-
-            val profile = Arguments.createMap()
-            val account = user.kakaoAccount
-            val detail = account?.profile
-
-            profile.putStringIfPresent("id", user.id?.toString())
-            profile.putStringIfPresent("name", account?.name)
-            profile.putStringIfPresent("email", account?.email)
-            profile.putStringIfPresent("nickname", detail?.nickname)
-            profile.putStringIfPresent("profileImageUrl", detail?.profileImageUrl)
-            profile.putStringIfPresent("thumbnailImageUrl", detail?.thumbnailImageUrl)
-            profile.putStringIfPresent("phoneNumber", account?.phoneNumber)
-            profile.putStringIfPresent("ageRange", account?.ageRange?.toString())
-            profile.putStringIfPresent("birthday", account?.birthday)
-            profile.putStringIfPresent("birthdayType", account?.birthdayType?.toString())
-            profile.putStringIfPresent("birthyear", account?.birthyear)
-            profile.putStringIfPresent("gender", account?.gender?.toString())
-            profile.putBooleanIfPresent("isEmailValid", account?.isEmailValid)
-            profile.putBooleanIfPresent("isEmailVerified", account?.isEmailVerified)
-            profile.putBooleanIfPresent("isKorean", account?.isKorean)
-            profile.putBooleanIfPresent("isDefaultImage", detail?.isDefaultImage)
-            profile.putBooleanIfPresent("isLeapMonth", account?.isLeapMonth)
-            profile.putStringIfPresent("connectedAt", formatDate(user.connectedAt))
-            profile.putStringIfPresent("synchedAt", formatDate(user.synchedAt))
-            profile.putStringIfPresent("legalName", account?.legalName)
-            profile.putStringIfPresent("legalBirthDate", account?.legalBirthDate)
-            profile.putStringIfPresent("legalGender", account?.legalGender?.toString())
-            profile.putBooleanIfPresent("ageRangeNeedsAgreement", account?.ageRangeNeedsAgreement)
-            profile.putBooleanIfPresent("birthdayNeedsAgreement", account?.birthdayNeedsAgreement)
-            profile.putBooleanIfPresent("birthyearNeedsAgreement", account?.birthyearNeedsAgreement)
-            profile.putBooleanIfPresent("emailNeedsAgreement", account?.emailNeedsAgreement)
-            profile.putBooleanIfPresent("genderNeedsAgreement", account?.genderNeedsAgreement)
-            profile.putBooleanIfPresent("isKoreanNeedsAgreement", account?.isKoreanNeedsAgreement)
-            profile.putBooleanIfPresent("phoneNumberNeedsAgreement", account?.phoneNumberNeedsAgreement)
-            profile.putBooleanIfPresent("profileNeedsAgreement", account?.profileNeedsAgreement)
-            profile.putBooleanIfPresent("profileNicknameNeedsAgreement", account?.profileNicknameNeedsAgreement)
-            profile.putBooleanIfPresent("profileImageNeedsAgreement", account?.profileImageNeedsAgreement)
-            profile.putBooleanIfPresent("nameNeedsAgreement", account?.nameNeedsAgreement)
-            profile.putBooleanIfPresent("legalNameNeedsAgreement", account?.legalNameNeedsAgreement)
-            profile.putBooleanIfPresent("legalBirthDateNeedsAgreement", account?.legalBirthDateNeedsAgreement)
-            profile.putBooleanIfPresent("legalGenderNeedsAgreement", account?.legalGenderNeedsAgreement)
-            promise.resolve(profile)
         }
     }
 
     // 배송지 조회
     @ReactMethod
     override fun shippingAddresses(promise: Promise) {
-        UserApiClient.instance.shippingAddresses { addresses, error ->
-            if (error != null) {
-                RNKakaoError.reject(promise, error)
-                return@shippingAddresses
-            }
-
-            if (addresses == null) {
-                RNKakaoError.rejectShippingAddressesNotFound(promise)
-                return@shippingAddresses
-            }
-
-            val result = Arguments.createMap()
-            result.putStringIfPresent("userId", addresses.userId?.toString())
-            result.putBooleanIfPresent("needsAgreement", addresses.needsAgreement)
-
-            val array = Arguments.createArray()
-            addresses.shippingAddresses?.map { addr ->
-                Arguments.createMap().apply {
-                    putStringIfPresent("id", addr.id?.toString())
-                    putStringIfPresent("name", addr.name)
-                    putBooleanIfPresent("isDefault", addr.isDefault)
-                    putStringIfPresent("updatedAt", formatDate(addr.updatedAt))
-                    putStringIfPresent("type", addr.type?.toString())
-                    putStringIfPresent("baseAddress", addr.baseAddress)
-                    putStringIfPresent("detailAddress", addr.detailAddress)
-                    putStringIfPresent("receiverName", addr.receiverName)
-                    putStringIfPresent("receiverPhoneNumber1", addr.receiverPhoneNumber1)
-                    putStringIfPresent("receiverPhoneNumber2", addr.receiverPhoneNumber2)
-                    putStringIfPresent("zoneNumber", addr.zoneNumber)
-                    putStringIfPresent("zipCode", addr.zipCode)
+        runConfigured(promise) {
+            UserApiClient.instance.shippingAddresses { addresses, error ->
+                if (error != null) {
+                    RNKakaoError.reject(promise, error)
+                    return@shippingAddresses
                 }
-            }?.forEach(array::pushMap)
-            result.putArray("shippingAddresses", array)
 
-            promise.resolve(result)
+                if (addresses == null) {
+                    RNKakaoError.rejectShippingAddressesNotFound(promise)
+                    return@shippingAddresses
+                }
+
+                promise.resolve(shippingAddressesToMap(addresses))
+            }
         }
     }
 
     // 서비스 약관 조회
     @ReactMethod
     override fun serviceTerms(promise: Promise) {
-        UserApiClient.instance.serviceTerms { terms, error ->
-            if (error != null) {
-                RNKakaoError.reject(promise, error)
-                return@serviceTerms
-            }
-
-            val result = Arguments.createMap()
-            terms?.id?.let { result.putString("userId", it.toString()) }
-
-            val array = Arguments.createArray()
-            terms?.serviceTerms?.map { term ->
-                Arguments.createMap().apply {
-                    putStringIfPresent("tag", term.tag)
-                    putBoolean("agreed", term.agreed)
-                    putBoolean("required", term.required)
-                    putBoolean("revocable", term.revocable)
-                    putStringIfPresent("agreedAt", formatDate(term.agreedAt))
+        runConfigured(promise) {
+            UserApiClient.instance.serviceTerms { terms, error ->
+                if (error != null) {
+                    RNKakaoError.reject(promise, error)
+                    return@serviceTerms
                 }
-            }?.forEach(array::pushMap)
-            result.putArray("serviceTerms", array)
 
-            promise.resolve(result)
+                promise.resolve(serviceTermsToMap(terms))
+            }
         }
     }
 
@@ -271,12 +215,35 @@ class RNKakaoSigninModule(
         }
 
         UserApiClient.instance.loginWithKakaoAccount(activity) { token, error ->
-            when {
-                token != null -> promise.resolve(resolveToken(token.accessToken, token.refreshToken, token.idToken, token.scopes))
-                error != null -> RNKakaoError.reject(promise, error)
-                else -> RNKakaoError.rejectUnknownLogin(promise)
-            }
+            tokenCallback(promise)(token, error)
         }
+    }
+
+    private fun runConfiguredOnUiThread(promise: Promise, action: () -> Unit) {
+        UiThreadUtil.runOnUiThread {
+            if (!ensureConfigured(promise)) {
+                return@runOnUiThread
+            }
+
+            action()
+        }
+    }
+
+    private fun ensureConfigured(promise: Promise): Boolean {
+        if (configureKakaoSdkIfNeeded()) {
+            return true
+        }
+
+        RNKakaoError.rejectMisconfigured(promise)
+        return false
+    }
+
+    private fun runConfigured(promise: Promise, action: () -> Unit) {
+        if (!ensureConfigured(promise)) {
+            return
+        }
+
+        action()
     }
 
     // 앱 메타데이터 조회
@@ -309,23 +276,182 @@ class RNKakaoSigninModule(
     }
 
     // 토큰 응답 생성
-    private fun resolveToken(accessToken: String?, refreshToken: String?, idToken: String? = null, scopes: List<String>? = null): WritableMap {
+    private fun resolveToken(oauthToken: OAuthToken): WritableMap {
         val token = Arguments.createMap()
-        val current = TokenManagerProvider.instance.manager.getToken()
 
-        token.putString("accessToken", accessToken)
-        token.putString("refreshToken", refreshToken)
-        token.putStringIfPresent("idToken", idToken)
-        token.putStringIfPresent("accessTokenExpiresAt", formatDate(current?.accessTokenExpiresAt))
-        token.putStringIfPresent("refreshTokenExpiresAt", formatDate(current?.refreshTokenExpiresAt))
+        token.putString("accessToken", oauthToken.accessToken)
+        token.putString("refreshToken", oauthToken.refreshToken)
+        token.putStringIfPresent("idToken", oauthToken.idToken)
+        token.putStringIfPresent("accessTokenExpiresAt", formatDate(oauthToken.accessTokenExpiresAt))
+        token.putStringIfPresent("refreshTokenExpiresAt", formatDate(oauthToken.refreshTokenExpiresAt))
 
-        if (scopes != null) {
+        if (oauthToken.scopes != null) {
             val scopeArray = Arguments.createArray()
-            scopes.forEach { scopeArray.pushString(it) }
+            oauthToken.scopes?.forEach { scopeArray.pushString(it) }
             token.putArray("scopes", scopeArray)
         }
 
         return token
+    }
+
+    private fun tokenCallback(promise: Promise): (OAuthToken?, Throwable?) -> Unit {
+        return { token, error ->
+            when {
+                token != null -> promise.resolve(resolveToken(token))
+                error != null -> RNKakaoError.reject(promise, error)
+                else -> RNKakaoError.rejectUnknownLogin(promise)
+            }
+        }
+    }
+
+    private fun unitCallback(promise: Promise): (Throwable?) -> Unit {
+        return { error ->
+            if (error != null) {
+                RNKakaoError.reject(promise, error)
+            } else {
+                promise.resolve(true)
+            }
+        }
+    }
+
+    private fun profileToMap(user: User): WritableMap {
+        val profile = Arguments.createMap()
+        val account = user.kakaoAccount
+        val detail = account?.profile
+
+        profile.putStringIfPresent("id", user.id?.toString())
+        profile.putStringIfPresent("name", account?.name)
+        profile.putStringIfPresent("email", account?.email)
+        profile.putStringIfPresent("nickname", detail?.nickname)
+        profile.putStringIfPresent("profileImageUrl", detail?.profileImageUrl)
+        profile.putStringIfPresent("thumbnailImageUrl", detail?.thumbnailImageUrl)
+        profile.putStringIfPresent("phoneNumber", account?.phoneNumber)
+        profile.putStringIfPresent("ageRange", formatAgeRange(account?.ageRange))
+        profile.putStringIfPresent("birthday", account?.birthday)
+        profile.putStringIfPresent("birthdayType", formatBirthdayType(account?.birthdayType))
+        profile.putStringIfPresent("birthyear", account?.birthyear)
+        profile.putStringIfPresent("gender", formatGender(account?.gender))
+        profile.putBooleanIfPresent("isEmailValid", account?.isEmailValid)
+        profile.putBooleanIfPresent("isEmailVerified", account?.isEmailVerified)
+        profile.putBooleanIfPresent("isKorean", account?.isKorean)
+        profile.putBooleanIfPresent("isDefaultImage", detail?.isDefaultImage)
+        profile.putBooleanIfPresent("isLeapMonth", account?.isLeapMonth)
+        profile.putStringIfPresent("connectedAt", formatDate(user.connectedAt))
+        profile.putStringIfPresent("synchedAt", formatDate(user.synchedAt))
+        profile.putStringIfPresent("legalName", account?.legalName)
+        profile.putStringIfPresent("legalBirthDate", account?.legalBirthDate)
+        profile.putStringIfPresent("legalGender", formatGender(account?.legalGender))
+        profile.putBooleanIfPresent("ageRangeNeedsAgreement", account?.ageRangeNeedsAgreement)
+        profile.putBooleanIfPresent("birthdayNeedsAgreement", account?.birthdayNeedsAgreement)
+        profile.putBooleanIfPresent("birthyearNeedsAgreement", account?.birthyearNeedsAgreement)
+        profile.putBooleanIfPresent("emailNeedsAgreement", account?.emailNeedsAgreement)
+        profile.putBooleanIfPresent("genderNeedsAgreement", account?.genderNeedsAgreement)
+        profile.putBooleanIfPresent("isKoreanNeedsAgreement", account?.isKoreanNeedsAgreement)
+        profile.putBooleanIfPresent("phoneNumberNeedsAgreement", account?.phoneNumberNeedsAgreement)
+        profile.putBooleanIfPresent("profileNeedsAgreement", account?.profileNeedsAgreement)
+        profile.putBooleanIfPresent("profileNicknameNeedsAgreement", account?.profileNicknameNeedsAgreement)
+        profile.putBooleanIfPresent("profileImageNeedsAgreement", account?.profileImageNeedsAgreement)
+        profile.putBooleanIfPresent("nameNeedsAgreement", account?.nameNeedsAgreement)
+        profile.putBooleanIfPresent("legalNameNeedsAgreement", account?.legalNameNeedsAgreement)
+        profile.putBooleanIfPresent("legalBirthDateNeedsAgreement", account?.legalBirthDateNeedsAgreement)
+        profile.putBooleanIfPresent("legalGenderNeedsAgreement", account?.legalGenderNeedsAgreement)
+
+        return profile
+    }
+
+    private fun shippingAddressesToMap(addresses: UserShippingAddresses): WritableMap {
+        val result = Arguments.createMap()
+        val array = Arguments.createArray()
+
+        result.putStringIfPresent("userId", addresses.userId?.toString())
+        result.putBooleanIfPresent("needsAgreement", addresses.needsAgreement)
+        addresses.shippingAddresses.orEmpty().forEach { array.pushMap(shippingAddressToMap(it)) }
+        result.putArray("shippingAddresses", array)
+
+        return result
+    }
+
+    private fun shippingAddressToMap(address: ShippingAddress): WritableMap {
+        return Arguments.createMap().apply {
+            putStringIfPresent("id", address.id?.toString())
+            putStringIfPresent("name", address.name)
+            putBooleanIfPresent("isDefault", address.isDefault)
+            putStringIfPresent("updatedAt", formatDate(address.updatedAt))
+            putStringIfPresent("type", formatShippingAddressType(address.type))
+            putStringIfPresent("baseAddress", address.baseAddress)
+            putStringIfPresent("detailAddress", address.detailAddress)
+            putStringIfPresent("receiverName", address.receiverName)
+            putStringIfPresent("receiverPhoneNumber1", address.receiverPhoneNumber1)
+            putStringIfPresent("receiverPhoneNumber2", address.receiverPhoneNumber2)
+            putStringIfPresent("zoneNumber", address.zoneNumber)
+            putStringIfPresent("zipCode", address.zipCode)
+        }
+    }
+
+    private fun serviceTermsToMap(terms: UserServiceTerms?): WritableMap {
+        val result = Arguments.createMap()
+        val array = Arguments.createArray()
+
+        terms?.id?.let { result.putString("userId", it.toString()) }
+        terms?.serviceTerms.orEmpty().forEach { array.pushMap(serviceTermToMap(it)) }
+        result.putArray("serviceTerms", array)
+
+        return result
+    }
+
+    private fun serviceTermToMap(term: ServiceTerms): WritableMap {
+        return Arguments.createMap().apply {
+            putStringIfPresent("tag", term.tag)
+            putBoolean("agreed", term.agreed)
+            putBoolean("required", term.required)
+            putBoolean("revocable", term.revocable)
+            putStringIfPresent("agreedAt", formatDate(term.agreedAt))
+        }
+    }
+
+    private fun formatAgeRange(ageRange: AgeRange?): String? {
+        return when (ageRange) {
+            AgeRange.AGE_0_9 -> "0~9"
+            AgeRange.AGE_10_14 -> "10~14"
+            AgeRange.AGE_15_19 -> "15~19"
+            AgeRange.AGE_20_29 -> "20~29"
+            AgeRange.AGE_30_39 -> "30~39"
+            AgeRange.AGE_40_49 -> "40~49"
+            AgeRange.AGE_50_59 -> "50~59"
+            AgeRange.AGE_60_69 -> "60~69"
+            AgeRange.AGE_70_79 -> "70~79"
+            AgeRange.AGE_80_89 -> "80~89"
+            AgeRange.AGE_90_ABOVE -> "90~"
+            AgeRange.UNKNOWN -> "unknown"
+            null -> null
+        }
+    }
+
+    private fun formatGender(gender: Gender?): String? {
+        return when (gender) {
+            Gender.FEMALE -> "female"
+            Gender.MALE -> "male"
+            Gender.UNKNOWN -> "unknown"
+            null -> null
+        }
+    }
+
+    private fun formatBirthdayType(birthdayType: BirthdayType?): String? {
+        return when (birthdayType) {
+            BirthdayType.SOLAR -> "solar"
+            BirthdayType.LUNAR -> "lunar"
+            BirthdayType.UNKNOWN -> "unknown"
+            null -> null
+        }
+    }
+
+    private fun formatShippingAddressType(type: ShippingAddressType?): String? {
+        return when (type) {
+            ShippingAddressType.OLD -> "old"
+            ShippingAddressType.NEW -> "new"
+            ShippingAddressType.UNKNOWN -> "unknown"
+            null -> null
+        }
     }
 
     // 선택값 입력
@@ -340,12 +466,6 @@ class RNKakaoSigninModule(
     private fun WritableMap.putBooleanIfPresent(key: String, value: Boolean?) {
         if (value != null) {
             putBoolean(key, value)
-        }
-    }
-
-    private fun WritableMap.putDoubleIfPresent(key: String, value: Double?) {
-        if (value != null) {
-            putDouble(key, value)
         }
     }
 
