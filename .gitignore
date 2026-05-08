@@ -83,6 +83,8 @@ yarn-error.log
 /example/RNKakaoSigninCliExample/android/build/
 /example/RNKakaoSigninCliExample/ios/build/
 /example/RNKakaoSigninCliExample/ios/Pods/
+/example/RNKakaoSigninCliExample/.bundle/
+/example/RNKakaoSigninCliExample/__tests__/
 /example/RNKakaoSigninCliExample/vendor/
 /example/RNKakaoSigninCliExample/env/.env.development
 /example/RNKakaoSigninCliExample/env/.env.production
