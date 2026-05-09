@@ -241,10 +241,10 @@ import {
   serviceTerms,
 } from '@package-kr/react-native-kakao-signin';
 
-// 카카오톡으로 로그인 (카카오톡 미설치 시 카카오계정으로 자동 전환)
+// 카카오톡 앱을 먼저 사용하고, 사용할 수 없으면 카카오계정 로그인으로 전환됩니다.
 const kakaoTalkToken = await login();
 
-// 카카오계정으로 로그인
+// 카카오톡 앱이 설치되어 있어도 앱 로그인을 건너뛰고, 카카오계정 로그인 웹 기반 화면으로 바로 이동합니다.
 const kakaoAccountToken = await loginWithKakaoAccount();
 
 // 로그아웃
@@ -270,16 +270,16 @@ const terms = await serviceTerms();
 
 ## Methods
 
-| 메서드                    | 설명                                                                                 | Returns                                 |
-| ------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------- |
-| `login()`                 | 카카오톡으로 로그인합니다. 카카오톡 미설치 시 카카오계정 로그인으로 자동 전환됩니다. | `Promise<KakaoOAuthToken>`              |
-| `loginWithKakaoAccount()` | 카카오계정으로 로그인합니다.                                                         | `Promise<KakaoOAuthToken>`              |
-| `logout()`                | 로그아웃합니다.                                                                      | `Promise<boolean>`                      |
-| `unlink()`                | 카카오 계정 연결을 해제합니다.                                                       | `Promise<boolean>`                      |
-| `getProfile()`            | 사용자 프로필을 조회합니다.                                                          | `Promise<KakaoProfile>`                 |
-| `getAccessToken()`        | 현재 저장된 액세스 토큰을 조회합니다.                                                | `Promise<KakaoAccessTokenInfo \| null>` |
-| `shippingAddresses()`     | 사용자 배송주소 목록을 조회합니다.                                                   | `Promise<KakaoShippingAddresses>`       |
-| `serviceTerms()`          | 서비스 약관 동의 내역을 조회합니다.                                                  | `Promise<KakaoServiceTerms>`            |
+| 메서드                    | 설명                                                                                                    | Returns                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `login()`                 | 카카오톡으로 로그인합니다. 카카오톡 미설치 시 카카오계정 로그인으로 자동 전환됩니다.                    | `Promise<KakaoOAuthToken>`              |
+| `loginWithKakaoAccount()` | 카카오톡 앱이 설치되어 있어도 앱 로그인을 건너뛰고, 카카오계정 로그인 웹 기반 화면으로 바로 이동합니다. | `Promise<KakaoOAuthToken>`              |
+| `logout()`                | 로그아웃합니다.                                                                                         | `Promise<boolean>`                      |
+| `unlink()`                | 카카오 계정 연결을 해제합니다.                                                                          | `Promise<boolean>`                      |
+| `getProfile()`            | 사용자 프로필을 조회합니다.                                                                             | `Promise<KakaoProfile>`                 |
+| `getAccessToken()`        | 현재 저장된 액세스 토큰을 조회합니다.                                                                   | `Promise<KakaoAccessTokenInfo \| null>` |
+| `shippingAddresses()`     | 사용자 배송주소 목록을 조회합니다.                                                                      | `Promise<KakaoShippingAddresses>`       |
+| `serviceTerms()`          | 서비스 약관 동의 내역을 조회합니다.                                                                     | `Promise<KakaoServiceTerms>`            |
 
 ---
 
