@@ -9,11 +9,15 @@ export interface KakaoSigninPluginProps {
   overrideKakaoSDKVersion?: string;
 }
 
+// 문자열 입력값 정규화
+const trimString = (value: unknown): string | undefined =>
+  typeof value === "string" ? value.trim() : undefined;
+
+// 플러그인 입력값 검증
 const normalizePluginProps = (
   props?: KakaoSigninPluginProps
 ): KakaoSigninPluginProps => {
-  const kakaoAppKey =
-    typeof props?.kakaoAppKey === "string" ? props.kakaoAppKey.trim() : "";
+  const kakaoAppKey = trimString(props?.kakaoAppKey) ?? "";
 
   if (!kakaoAppKey) {
     throw new Error(
@@ -27,10 +31,7 @@ const normalizePluginProps = (
     );
   }
 
-  const kakaoAppScheme =
-    typeof props?.kakaoAppScheme === "string"
-      ? props.kakaoAppScheme.trim()
-      : undefined;
+  const kakaoAppScheme = trimString(props?.kakaoAppScheme);
 
   if (kakaoAppScheme !== undefined && !/^[A-Za-z][A-Za-z0-9+.-]*$/.test(kakaoAppScheme)) {
     throw new Error(
@@ -38,10 +39,7 @@ const normalizePluginProps = (
     );
   }
 
-  const overrideKakaoSDKVersion =
-    typeof props?.overrideKakaoSDKVersion === "string"
-      ? props.overrideKakaoSDKVersion.trim()
-      : undefined;
+  const overrideKakaoSDKVersion = trimString(props?.overrideKakaoSDKVersion);
 
   if (
     overrideKakaoSDKVersion !== undefined &&
@@ -60,16 +58,17 @@ const normalizePluginProps = (
   };
 };
 
+// iOS/Android 설정 적용
 const withKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (
   config,
   props
 ) => {
   const normalizedProps = normalizePluginProps(props);
 
-  config = withIosKakaoSignin(config, normalizedProps);
-  config = withAndroidKakaoSignin(config, normalizedProps);
-
-  return config;
+  return withAndroidKakaoSignin(
+    withIosKakaoSignin(config, normalizedProps),
+    normalizedProps
+  );
 };
 
 const pak = require("../../package.json");

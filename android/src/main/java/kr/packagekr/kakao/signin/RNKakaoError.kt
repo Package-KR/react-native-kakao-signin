@@ -187,18 +187,8 @@ object RNKakaoError {
         val normalizedDescription = sdkMessage?.lowercase().orEmpty()
 
         return when (error.reason) {
-            AuthErrorCause.InvalidRequest -> {
-                when {
-                    normalizedDescription.contains("package") || normalizedDescription.contains("bundle") ->
-                        make(INVALID_BUNDLE_ID, Message.invalidBundleId, sdkMessage)
-                    normalizedDescription.contains("scheme") || normalizedDescription.contains("redirect") ->
-                        make(INVALID_URL_SCHEME, Message.invalidUrlScheme, sdkMessage)
-                    normalizedDescription.contains("client") || normalizedDescription.contains("app key") ->
-                        make(INVALID_APP_KEY, Message.invalidAppKey, sdkMessage)
-                    else ->
-                        make(INVALID_REQUEST, Message.invalidRequest, sdkMessage)
-                }
-            }
+            AuthErrorCause.InvalidRequest ->
+                resolveAuthConfigurationError(normalizedDescription, sdkMessage, INVALID_REQUEST, Message.invalidRequest)
             AuthErrorCause.InvalidClient ->
                 resolveAuthConfigurationError(normalizedDescription, sdkMessage)
             AuthErrorCause.AccessDenied ->
@@ -219,7 +209,12 @@ object RNKakaoError {
         }
     }
 
-    private fun resolveAuthConfigurationError(normalizedDescription: String, sdkMessage: String?): ParsedError {
+    private fun resolveAuthConfigurationError(
+        normalizedDescription: String,
+        sdkMessage: String?,
+        fallbackCode: String = INVALID_CLIENT,
+        fallbackMessage: String = Message.invalidClient,
+    ): ParsedError {
         return when {
             normalizedDescription.contains("package") || normalizedDescription.contains("bundle") ->
                 make(INVALID_BUNDLE_ID, Message.invalidBundleId, sdkMessage)
@@ -228,7 +223,7 @@ object RNKakaoError {
             normalizedDescription.contains("client") || normalizedDescription.contains("app key") ->
                 make(INVALID_APP_KEY, Message.invalidAppKey, sdkMessage)
             else ->
-                make(INVALID_CLIENT, Message.invalidClient, sdkMessage)
+                make(fallbackCode, fallbackMessage, sdkMessage)
         }
     }
 
