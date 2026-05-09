@@ -10,6 +10,7 @@ import {
 import type { ManifestActivity } from '@expo/config-plugins/build/android/Manifest';
 import type { KakaoSigninPluginProps } from '..';
 
+// Android 설정 상수
 const ACTIVITY_NAME = 'com.kakao.sdk.auth.AuthCodeHandlerActivity';
 const KAKAO_MAVEN_URL = 'https://devrepo.kakao.com/nexus/content/groups/public/';
 const KAKAO_MAVEN_REPOSITORY = `maven { url '${KAKAO_MAVEN_URL}' }`;
@@ -20,9 +21,11 @@ const KAKAO_VERSION_MARKER_END = '// @package-kr/react-native-kakao-signin kakao
 const KAKAO_VERSION_MARKER_REGEX =
   /\s*\/\/ @package-kr\/react-native-kakao-signin kakaoSdkVersion start\r?\n\s*kakaoSdkVersion\s*=\s*["'][^"']*["']\r?\n\s*\/\/ @package-kr\/react-native-kakao-signin kakaoSdkVersion end\r?\n?/m;
 
+// 카카오 URL scheme 해석
 const resolveKakaoScheme = (props: KakaoSigninPluginProps): string =>
   props.kakaoAppScheme ?? `kakao${props.kakaoAppKey}`;
 
+// 카카오 OAuth redirect intent-filter 생성
 const createKakaoIntentFilter = (kakaoScheme: string) => ({
   action: [
     {
@@ -43,9 +46,11 @@ const createKakaoIntentFilter = (kakaoScheme: string) => ({
   ],
 });
 
+// OAuth redirect intent-filter action 확인
 const hasExpectedAction = (intentFilter: NonNullable<ManifestActivity['intent-filter']>[number]) =>
   intentFilter.action?.some(action => action.$['android:name'] === 'android.intent.action.VIEW') ?? false;
 
+// OAuth redirect intent-filter category 확인
 const hasExpectedCategories = (intentFilter: NonNullable<ManifestActivity['intent-filter']>[number]) => {
   const categories = intentFilter.category?.map(category => category.$['android:name']) ?? [];
   return (
@@ -53,11 +58,13 @@ const hasExpectedCategories = (intentFilter: NonNullable<ManifestActivity['inten
   );
 };
 
+// 카카오 OAuth redirect intent-filter 판정
 const isOAuthRedirectIntentFilter = (intentFilter: NonNullable<ManifestActivity['intent-filter']>[number]) =>
   hasExpectedAction(intentFilter) &&
   hasExpectedCategories(intentFilter) &&
   (intentFilter.data?.some(data => data.$['android:host'] === 'oauth') ?? false);
 
+// 지정한 scheme의 카카오 OAuth redirect intent-filter 판정
 const isOAuthRedirectIntentFilterForScheme = (
   intentFilter: NonNullable<ManifestActivity['intent-filter']>[number],
   kakaoScheme: string,
@@ -70,12 +77,13 @@ const isOAuthRedirectIntentFilterForScheme = (
 
 /**
  * AndroidManifest.xml에 AuthCodeHandlerActivity 추가
- * 카카오톡 로그인 후 앱으로 돌아오기 위한 리다이렉트 설정
+ * 카카오톡 로그인 후 앱으로 돌아오기 위한 OAuth redirect intent-filter를 병합한다
  */
 const modifyAndroidManifest: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
   return withAndroidManifest(config, config => {
     const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults);
     const kakaoScheme = resolveKakaoScheme(props);
+    const activities = (mainApplication.activity ??= []);
 
     const kakaoActivity: ManifestActivity = {
       $: {
@@ -85,17 +93,11 @@ const modifyAndroidManifest: ConfigPlugin<KakaoSigninPluginProps> = (config, pro
       'intent-filter': [createKakaoIntentFilter(kakaoScheme)],
     };
 
-    if (!mainApplication.activity) {
-      mainApplication.activity = [];
-    }
+    const activity = activities.find(activity => activity.$['android:name'] === ACTIVITY_NAME);
 
-    // 기존 카카오 액티비티가 있으면 보존하고 필요한 intent-filter만 병합
-    const existingIndex = mainApplication.activity.findIndex(activity => activity.$['android:name'] === ACTIVITY_NAME);
-
-    if (existingIndex < 0) {
-      mainApplication.activity.push(kakaoActivity);
+    if (!activity) {
+      activities.push(kakaoActivity);
     } else {
-      const activity = mainApplication.activity[existingIndex];
       const intentFilters = activity['intent-filter'] ?? [];
 
       activity.$ = {
@@ -115,9 +117,7 @@ const modifyAndroidManifest: ConfigPlugin<KakaoSigninPluginProps> = (config, pro
   });
 };
 
-/**
- * strings.xml에 kakao_app_key 추가
- */
+// strings.xml에 Kakao 앱 키와 URL scheme 추가
 const modifyStringsXml: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
   return withStringsXml(config, config => {
     AndroidConfig.Strings.setStringItem([{ $: { name: 'kakao_app_key' }, _: props.kakaoAppKey }], config.modResults);
@@ -130,6 +130,7 @@ const modifyStringsXml: ConfigPlugin<KakaoSigninPluginProps> = (config, props) =
   });
 };
 
+// settings.gradle에 Kakao Maven 저장소 추가
 const modifySettingsGradle: ConfigPlugin<KakaoSigninPluginProps> = config => {
   return withSettingsGradle(config, config => {
     config.modResults.contents = ensureKakaoMavenRepositoryInSettings(config.modResults.contents);
@@ -137,6 +138,7 @@ const modifySettingsGradle: ConfigPlugin<KakaoSigninPluginProps> = config => {
   });
 };
 
+// Expo/AGP가 읽는 extra Maven 저장소 속성 추가
 const modifyGradleProperties: ConfigPlugin<KakaoSigninPluginProps> = config => {
   return withGradleProperties(config, config => {
     const existingProperty = config.modResults.find(
@@ -180,6 +182,7 @@ const modifyProjectBuildGradle: ConfigPlugin<KakaoSigninPluginProps> = (config, 
   });
 };
 
+// dependencyResolutionManagement 블록에 Kakao Maven 저장소 병합
 const ensureKakaoMavenRepositoryInSettings = (contents: string): string => {
   if (contents.includes(KAKAO_MAVEN_URL) || !contents.includes('dependencyResolutionManagement')) {
     return contents;
@@ -198,6 +201,7 @@ const ensureKakaoMavenRepositoryInSettings = (contents: string): string => {
   );
 };
 
+// android.extraMavenRepos JSON 값에 Kakao Maven 저장소 병합
 const mergeKakaoMavenRepoProperty = (value: string): string => {
   try {
     const repositories = JSON.parse(value);
@@ -211,6 +215,7 @@ const mergeKakaoMavenRepoProperty = (value: string): string => {
   return KAKAO_EXTRA_MAVEN_REPOS;
 };
 
+// buildscript.ext 블록에 Kakao SDK 버전 변수 삽입
 const insertKakaoSdkVersionIntoBuildscript = (contents: string, extProperty: string): string => {
   if (!/buildscript\s*\{/.test(contents)) {
     return `buildscript {\n    ext {\n        ${extProperty}\n    }\n}\n\n${contents}`;
@@ -223,12 +228,13 @@ const insertKakaoSdkVersionIntoBuildscript = (contents: string, extProperty: str
   return contents.replace(/(buildscript\s*\{[\s\S]*?ext\s*\{)/, `$1\n        ${extProperty}`);
 };
 
+// Android 설정 적용
 export const withAndroidKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
-  config = modifySettingsGradle(config, props);
-  config = modifyGradleProperties(config, props);
-  config = modifyAndroidManifest(config, props);
-  config = modifyStringsXml(config, props);
-  config = modifyProjectBuildGradle(config, props);
-
-  return config;
+  return [
+    modifySettingsGradle,
+    modifyGradleProperties,
+    modifyAndroidManifest,
+    modifyStringsXml,
+    modifyProjectBuildGradle,
+  ].reduce((nextConfig, plugin) => plugin(nextConfig, props), config);
 };

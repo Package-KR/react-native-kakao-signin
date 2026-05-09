@@ -2,12 +2,14 @@ import { type ConfigPlugin, withInfoPlist, withAppDelegate, withDangerousMod } f
 import { readFile, writeFile } from 'node:fs/promises';
 import type { KakaoSigninPluginProps } from '..';
 
+// iOS URL scheme 및 AppDelegate 주입 상수
 const KAKAO_SCHEMES = ['kakaokompassauth', 'kakaotalk'];
 const KAKAO_OPEN_URL_MARKER_START = '// @package-kr/react-native-kakao-signin open-url start';
 const KAKAO_OPEN_URL_MARKER_END = '// @package-kr/react-native-kakao-signin open-url end';
 const KAKAO_OPEN_URL_BLOCK_REGEX =
   /\n?[ \t]*\/\/ @package-kr\/react-native-kakao-signin open-url start[\s\S]*?\/\/ @package-kr\/react-native-kakao-signin open-url end\r?\n?/m;
 
+// AppDelegate.swift에 필요한 Swift import 추가
 const addSwiftImport = (contents: string, moduleName: string): string => {
   if (new RegExp(`^\\s*import\\s+${moduleName}\\s*$`, 'm').test(contents)) {
     return contents;
@@ -22,9 +24,11 @@ const addSwiftImport = (contents: string, moduleName: string): string => {
   return nextContents;
 };
 
+// AppDelegate.swift의 application(_:open:options:) 메서드 탐색
 const openUrlMethodRegex =
   /(^[ \t]*(?:(?:public|internal|private|fileprivate|open|override)\s+)*func\s+application\s*\(\s*_\s+\w+\s*:\s*UIApplication\s*,\s*open\s+url\s*:\s*URL\s*,\s*options\s*:\s*\[UIApplication\.OpenURLOptionsKey\s*:\s*Any\](?:\s*=\s*\[:\])?\s*\)\s*->\s*Bool\s*\{)/m;
 
+// 카카오 URL open handler 블록 생성
 const createKakaoOpenUrlBlock = (indent: string): string =>
   [
     `${indent}${KAKAO_OPEN_URL_MARKER_START}`,
@@ -34,6 +38,7 @@ const createKakaoOpenUrlBlock = (indent: string): string =>
     `${indent}${KAKAO_OPEN_URL_MARKER_END}`,
   ].join('\n');
 
+// 이전 플러그인 주입 블록 제거
 const removeKakaoOpenUrlBlock = (contents: string): string =>
   contents
     .replace(KAKAO_OPEN_URL_BLOCK_REGEX, '\n')
@@ -46,6 +51,10 @@ const removeKakaoOpenUrlBlock = (contents: string): string =>
       '\n',
     );
 
+/**
+ * AppDelegate.swift에 카카오 URL open handler 주입
+ * 기존 application(_:open:options:)가 있으면 보존하고 카카오 처리만 앞에 추가
+ */
 const injectKakaoOpenUrlHandler = (contents: string): string => {
   const cleanedContents = removeKakaoOpenUrlBlock(contents);
   const existingMethod = openUrlMethodRegex.exec(cleanedContents);
@@ -73,6 +82,7 @@ ${handler}
   return cleanedContents.replace(/\n}\s*$/, `\n\n${openUrlMethod}\n}\n`);
 };
 
+// Info.plist에 앱 키, URL scheme, LSApplicationQueriesSchemes 추가
 const modifyInfoPlist: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
   return withInfoPlist(config, config => {
     const kakaoScheme = props.kakaoAppScheme ?? `kakao${props.kakaoAppKey}`;
@@ -115,6 +125,7 @@ const modifyInfoPlist: ConfigPlugin<KakaoSigninPluginProps> = (config, props) =>
   });
 };
 
+// AppDelegate.swift에 카카오 URL 처리 코드 추가
 const modifyAppDelegate: ConfigPlugin<KakaoSigninPluginProps> = (config, _props) => {
   return withAppDelegate(config, config => {
     config.modResults.contents = addSwiftImport(config.modResults.contents, 'React');
@@ -126,12 +137,17 @@ const modifyAppDelegate: ConfigPlugin<KakaoSigninPluginProps> = (config, _props)
   });
 };
 
+// Podfile Kakao SDK 버전 override 상수
 const KAKAO_SDK_VERSION_VARIABLE = '$KakaoSDKVersion';
 const KAKAO_SDK_VERSION_MARKER_START = '# @package-kr/react-native-kakao-signin KakaoSDKVersion start';
 const KAKAO_SDK_VERSION_MARKER_END = '# @package-kr/react-native-kakao-signin KakaoSDKVersion end';
 const KAKAO_SDK_VERSION_REGEX =
   /\s*# @package-kr\/react-native-kakao-signin KakaoSDKVersion start\r?\n\s*\$KakaoSDKVersion\s*=\s*["'][^"']*["']\r?\n\s*# @package-kr\/react-native-kakao-signin KakaoSDKVersion end\r?\n?/m;
 
+/**
+ * Podfile에 Kakao SDK 버전 override 추가/제거
+ * overrideKakaoSDKVersion을 제거하면 기존 플러그인 주입 값도 제거한다
+ */
 const modifyPodfile: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
   return withDangerousMod(config, [
     'ios',
@@ -168,10 +184,10 @@ const modifyPodfile: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
   ]);
 };
 
+// iOS 설정 적용
 export const withIosKakaoSignin: ConfigPlugin<KakaoSigninPluginProps> = (config, props) => {
-  config = modifyInfoPlist(config, props);
-  config = modifyAppDelegate(config, props);
-  config = modifyPodfile(config, props);
-
-  return config;
+  return [modifyInfoPlist, modifyAppDelegate, modifyPodfile].reduce(
+    (nextConfig, plugin) => plugin(nextConfig, props),
+    config,
+  );
 };
