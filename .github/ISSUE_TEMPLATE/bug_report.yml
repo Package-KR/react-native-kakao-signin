@@ -1,0 +1,88 @@
+name: Bug report / 버그 제보
+description: Report a runtime or API behavior bug. / 런타임 또는 API 동작 버그를 제보합니다.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include enough detail to reproduce the issue.
+        이슈를 재현할 수 있도록 필요한 정보를 함께 적어주세요.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary / 요약
+      description: What happened, and what did you expect to happen? / 어떤 문제가 발생했고, 기대한 동작은 무엇인가요?
+      placeholder: Kakao login fails after... / 카카오 로그인 호출 후...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction / 재현 방법
+      description: Provide the smallest reproducible steps or a repository link. / 최소 재현 단계 또는 재현 저장소 링크를 적어주세요.
+      placeholder: |
+        1. Install ...
+        2. Configure ...
+        3. Call ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output / 로그 또는 에러 출력
+      description: Paste relevant native, Metro, Xcode, Gradle, or runtime logs. / 관련 네이티브, Metro, Xcode, Gradle, 런타임 로그를 붙여주세요.
+      render: shell
+    validations:
+      required: false
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version / 패키지 버전
+      placeholder: Latest version or exact version / 최신 버전 또는 정확한 버전
+    validations:
+      required: true
+  - type: input
+    id: react-native-version
+    attributes:
+      label: React Native version / React Native 버전
+      placeholder: "0.85.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: React Native architecture / React Native 아키텍처
+      options:
+        - New Architecture
+        - Old Architecture
+        - Unknown
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Platform / 플랫폼
+      multiple: true
+      options:
+        - iOS
+        - Android
+        - Expo
+        - React Native CLI
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 환경
+      description: Include OS, Xcode, Android Gradle Plugin, Gradle, Kotlin, Expo SDK, device/simulator details if relevant. / 관련 있는 OS, Xcode, Android Gradle Plugin, Gradle, Kotlin, Expo SDK, 기기/시뮬레이터 정보를 적어주세요.
+      placeholder: |
+        macOS:
+        Xcode:
+        Android Gradle Plugin:
+        Gradle:
+        Kotlin:
+        Expo SDK:
+        Device/Simulator:
+    validations:
+      required: false
