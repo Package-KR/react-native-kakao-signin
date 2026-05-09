@@ -6,6 +6,7 @@
     ":semanticCommitTypeAll(chore)"
   ],
   "labels": ["dependencies"],
+  "baseBranches": ["dev"],
   "rangeStrategy": "bump",
   "dependencyDashboard": true,
   "rebaseWhen": "behind-base-branch",
