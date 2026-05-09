@@ -6,7 +6,6 @@
   "types": "src/index.ts",
   "scripts": {
     "build:plugin": "tsc -p plugin/tsconfig.json",
-    "verify:all": "sh scripts/verify-all.sh",
     "prepublishOnly": "npm run build:plugin"
   },
   "repository": {

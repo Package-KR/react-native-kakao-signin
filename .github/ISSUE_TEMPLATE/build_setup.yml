@@ -1,0 +1,89 @@
+name: Build, install, or configuration issue / 빌드, 설치, 설정 문제
+description: Report installation, native build, Expo plugin, URL scheme, or Kakao SDK setup problems. / 설치, 네이티브 빌드, Expo 플러그인, URL scheme, Kakao SDK 설정 문제를 제보합니다.
+title: "[Setup]: "
+labels: ["setup"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for native build errors, Expo prebuild issues, Kakao app key or URL scheme setup, and Kakao SDK repository/version problems.
+        네이티브 빌드 에러, Expo prebuild 문제, Kakao 앱 키 또는 URL scheme 설정, Kakao SDK 저장소/버전 문제는 이 템플릿을 사용해주세요.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 문제
+      description: What command or configuration failed? / 어떤 명령 또는 설정이 실패했나요?
+      placeholder: "npm run android fails with... / npm run android 실행 시..."
+    validations:
+      required: true
+  - type: dropdown
+    id: project-type
+    attributes:
+      label: Project type / 프로젝트 유형
+      options:
+        - React Native CLI
+        - Expo prebuild / custom dev client
+        - Unknown
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform / 플랫폼
+      multiple: true
+      options:
+        - iOS
+        - Android
+    validations:
+      required: true
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Relevant configuration / 관련 설정
+      description: Paste only the relevant parts of app.json/app.config.js, Info.plist, AndroidManifest.xml, strings.xml, build.gradle, or Podfile. Do not include secrets. / app.json/app.config.js, Info.plist, AndroidManifest.xml, strings.xml, build.gradle, Podfile 중 관련 부분만 붙여주세요. secret은 포함하지 마세요.
+      render: js
+    validations:
+      required: false
+  - type: textarea
+    id: command-output
+    attributes:
+      label: Command output / 명령 출력
+      description: Paste the full relevant error output. / 관련 에러 출력을 충분히 붙여주세요.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version / 패키지 버전
+      placeholder: Latest version or exact version / 최신 버전 또는 정확한 버전
+    validations:
+      required: true
+  - type: input
+    id: react-native-version
+    attributes:
+      label: React Native version / React Native 버전
+      placeholder: "0.85.3"
+    validations:
+      required: true
+  - type: input
+    id: expo-version
+    attributes:
+      label: Expo SDK version / Expo SDK 버전
+      placeholder: "Only if using Expo / Expo 사용 시에만"
+    validations:
+      required: false
+  - type: textarea
+    id: native-versions
+    attributes:
+      label: Native toolchain versions / 네이티브 도구 버전
+      placeholder: |
+        Xcode:
+        iOS deployment target:
+        Android Gradle Plugin:
+        Gradle:
+        Kotlin:
+        compileSdk:
+        minSdk:
+    validations:
+      required: false
