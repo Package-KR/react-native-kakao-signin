@@ -71,12 +71,7 @@ class RNKakaoSignin: NSObject {
           if let error = error {
             let parsedError = RNKakaoError.parse(error)
 
-            if RNKakaoError.isTerminalLoginError(parsedError) {
-              self.rejectParsed(reject, parsedError)
-              return
-            }
-
-            if RNKakaoError.isConfigurationError(parsedError) {
+            if !RNKakaoError.shouldFallbackToKakaoAccount(parsedError) {
               self.rejectParsed(reject, parsedError)
               return
             }
@@ -144,15 +139,9 @@ class RNKakaoSignin: NSObject {
   func getProfile(_ resolve: @escaping RCTPromiseResolveBlock,
                   reject: @escaping RCTPromiseRejectBlock) {
     runConfiguredOnMain(reject) {
-      UserApi.shared.me { user, error in
-        if let error = error { self.reject(reject, error) }
-        else if user == nil {
-          self.rejectParsed(reject, RNKakaoError.profileNotFound())
-        }
-        else {
-          resolve(self.profileToDict(user))
-        }
-      }
+      UserApi.shared.me(
+        completion: self.valueHandler(resolve, reject, RNKakaoError.profileNotFound(), self.profileToDict)
+      )
     }
   }
 
@@ -161,15 +150,9 @@ class RNKakaoSignin: NSObject {
   func shippingAddresses(_ resolve: @escaping RCTPromiseResolveBlock,
                          reject: @escaping RCTPromiseRejectBlock) {
     runConfiguredOnMain(reject) {
-      UserApi.shared.shippingAddresses { addresses, error in
-        if let error = error { self.reject(reject, error) }
-        else if addresses == nil {
-          self.rejectParsed(reject, RNKakaoError.shippingAddressesNotFound())
-        }
-        else {
-          resolve(self.shippingAddressesToDict(addresses))
-        }
-      }
+      UserApi.shared.shippingAddresses(
+        completion: self.valueHandler(resolve, reject, RNKakaoError.shippingAddressesNotFound(), self.shippingAddressesToDict)
+      )
     }
   }
 
@@ -178,12 +161,7 @@ class RNKakaoSignin: NSObject {
   func serviceTerms(_ resolve: @escaping RCTPromiseResolveBlock,
                     reject: @escaping RCTPromiseRejectBlock) {
     runConfiguredOnMain(reject) {
-      UserApi.shared.serviceTerms { terms, error in
-        if let error = error { self.reject(reject, error) }
-        else {
-          resolve(self.serviceTermsToDict(terms))
-        }
-      }
+      UserApi.shared.serviceTerms(completion: self.valueHandler(resolve, reject, nil, self.serviceTermsToDict))
     }
   }
 
@@ -229,6 +207,24 @@ class RNKakaoSignin: NSObject {
     return { error in
       if let error = error { self.reject(reject, error) }
       else { resolve(true) }
+    }
+  }
+
+  // 값 응답 콜백
+  private func valueHandler<Value>(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    _ reject: @escaping RCTPromiseRejectBlock,
+    _ missingError: RNKakaoError.ParsedError?,
+    _ transform: @escaping (Value?) -> [String: Any]
+  ) -> (Value?, Error?) -> Void {
+    return { value, error in
+      if let error = error { self.reject(reject, error) }
+      else if value == nil, let missingError = missingError {
+        self.rejectParsed(reject, missingError)
+      }
+      else {
+        resolve(transform(value))
+      }
     }
   }
 

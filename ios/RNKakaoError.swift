@@ -106,84 +106,94 @@ enum RNKakaoError {
     return make(Code.defaultError, Message.defaultError, sdkMessage)
   }
 
-  static func isTerminalLoginError(_ error: ParsedError) -> Bool {
-    return [Code.cancelled, Code.accessDenied].contains(error.code)
+  static func shouldFallbackToKakaoAccount(_ error: ParsedError) -> Bool {
+    return !fallbackCodes.contains(error.code)
   }
 
-  static func isConfigurationError(_ error: ParsedError) -> Bool {
-    return [
-      Code.invalidAppKey,
-      Code.invalidBundleId,
-      Code.invalidClient,
-      Code.invalidUrlScheme,
-      Code.misconfigured,
-    ].contains(error.code)
-  }
+  private typealias ErrorSpec = (code: String, message: String)
+
+  private static let fallbackCodes = [
+    Code.cancelled,
+    Code.accessDenied,
+    Code.invalidAppKey,
+    Code.invalidBundleId,
+    Code.invalidClient,
+    Code.invalidUrlScheme,
+    Code.misconfigured,
+  ]
 
   // 클라이언트 에러 변환
   private static func resolveClientError(_ reason: ClientFailureReason, _ sdkMessage: String?) -> ParsedError {
-    switch reason {
+    let spec: ErrorSpec = switch reason {
     case .Cancelled:
-      return make(Code.cancelled, Message.cancelled, sdkMessage)
+      (Code.cancelled, Message.cancelled)
     case .TokenNotFound:
-      return make(Code.tokenNotFound, Message.tokenNotFound, sdkMessage)
+      (Code.tokenNotFound, Message.tokenNotFound)
     case .NotSupported:
-      return make(Code.notSupported, Message.notSupported, sdkMessage)
+      (Code.notSupported, Message.notSupported)
     case .BadParameter:
-      return make(Code.badParameter, Message.badParameter, sdkMessage)
+      (Code.badParameter, Message.badParameter)
     case .IllegalState:
-      return make(Code.illegalState, Message.illegalState, sdkMessage)
-    case .CastingFailed:
-      return make(Code.clientError, Message.clientError, sdkMessage)
+      (Code.illegalState, Message.illegalState)
     default:
-      return make(Code.clientError, Message.clientError, sdkMessage)
+      (Code.clientError, Message.clientError)
     }
+
+    return make(spec.code, spec.message, sdkMessage)
   }
 
   // API 에러 변환
   private static func resolveApiError(_ reason: ApiFailureReason, _ sdkMessage: String?) -> ParsedError {
-    switch reason {
+    let spec: ErrorSpec = switch reason {
     case .InvalidAccessToken:
-      return make(Code.tokenExpired, Message.tokenExpired, sdkMessage)
+      (Code.tokenExpired, Message.tokenExpired)
     case .Blocked, .Permission, .InsufficientScope, .RequiredAgeVerification, .UnderAgeLimit, .LowerAgeLimit:
-      return make(Code.forbidden, Message.forbidden, sdkMessage)
+      (Code.forbidden, Message.forbidden)
     case .ApiLimitExceed, .TalkSendMessageMonthlyLimitExceed, .TalkSendMessageDailyLimitExceed, .AgeCheckLimitExceed:
-      return make(Code.rateLimit, Message.rateLimit, sdkMessage)
+      (Code.rateLimit, Message.rateLimit)
     case .BadParameter:
-      return make(Code.badParameter, Message.badParameter, sdkMessage)
+      (Code.badParameter, Message.badParameter)
     case .UnsupportedApi, .DeprecatedApi:
-      return make(Code.notSupported, Message.notSupported, sdkMessage)
+      (Code.notSupported, Message.notSupported)
     case .Internal, .ServerTimeout, .UnderMaintenance:
-      return make(Code.serverError, Message.serverError, sdkMessage)
+      (Code.serverError, Message.serverError)
     case .NoSuchApp:
-      return make(Code.invalidAppKey, Message.invalidAppKey, sdkMessage)
+      (Code.invalidAppKey, Message.invalidAppKey)
     default:
-      return make(Code.apiError, Message.apiError, sdkMessage)
+      (Code.apiError, Message.apiError)
     }
+
+    return make(spec.code, spec.message, sdkMessage)
   }
 
   // 인증 에러 변환
   private static func resolveAuthError(_ reason: AuthFailureReason, _ sdkMessage: String?) -> ParsedError {
-    switch reason {
-    case .InvalidClient:
+    if reason == .InvalidClient {
       return resolveAuthConfigurationError(sdkMessage)
-    case .InvalidGrant:
-      return make(Code.invalidGrant, Message.invalidGrant, sdkMessage)
-    case .InvalidRequest:
-      return resolveInvalidRequest(sdkMessage)
-    case .InvalidScope:
-      return make(Code.invalidScope, Message.invalidScope, sdkMessage)
-    case .Misconfigured:
-      return make(Code.misconfigured, Message.misconfigured, sdkMessage)
-    case .Unauthorized:
-      return make(Code.loginRequired, Message.loginRequired, sdkMessage)
-    case .AccessDenied:
-      return make(Code.accessDenied, Message.accessDenied, sdkMessage)
-    case .ServerError:
-      return make(Code.serverError, Message.serverError, sdkMessage)
-    default:
-      return make(Code.authError, Message.authError, sdkMessage)
     }
+
+    if reason == .InvalidRequest {
+      return resolveInvalidRequest(sdkMessage)
+    }
+
+    let spec: ErrorSpec = switch reason {
+    case .InvalidGrant:
+      (Code.invalidGrant, Message.invalidGrant)
+    case .InvalidScope:
+      (Code.invalidScope, Message.invalidScope)
+    case .Misconfigured:
+      (Code.misconfigured, Message.misconfigured)
+    case .Unauthorized:
+      (Code.loginRequired, Message.loginRequired)
+    case .AccessDenied:
+      (Code.accessDenied, Message.accessDenied)
+    case .ServerError:
+      (Code.serverError, Message.serverError)
+    default:
+      (Code.authError, Message.authError)
+    }
+
+    return make(spec.code, spec.message, sdkMessage)
   }
 
   // 인증 설정 에러 변환
