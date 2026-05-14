@@ -61,6 +61,48 @@ jobs:
         working-directory: example/RNKakaoSigninCliExample/android
         run: ./gradlew :package-kr_react-native-kakao-signin:compileDebugKotlin
 
+  expo:
+    name: Expo Plugin
+    runs-on: macos-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.15.0
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build:plugin
+
+      - name: Install example dependencies
+        working-directory: example/RNKakaoSigninExpoExample
+        run: npm ci
+
+      - name: Type check Expo example
+        working-directory: example/RNKakaoSigninExpoExample
+        run: npx tsc --noEmit
+
+      - name: Resolve Expo config
+        working-directory: example/RNKakaoSigninExpoExample
+        run: npx expo config --json > /tmp/kakao-expo-config.json
+
+      - name: Prebuild iOS project
+        working-directory: example/RNKakaoSigninExpoExample
+        run: npx expo prebuild --platform ios --no-install --clean
+
+      - name: Verify iOS plugin output
+        working-directory: example/RNKakaoSigninExpoExample
+        run: |
+          /usr/bin/grep -q 'KAKAO_APP_KEY' ios/RNKakaoSigninExpoExample/Info.plist
+          /usr/bin/grep -q 'RNKakaoSignin.handleOpen' ios/RNKakaoSigninExpoExample/AppDelegate.swift
+
   ios:
     name: iOS
     runs-on: macos-latest
