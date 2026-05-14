@@ -1,3 +1,4 @@
+// React Native 브리지 / TurboModule 연결
 #import <React/RCTBridgeModule.h>
 #if __has_include(<RNKakaoSignin/RNKakaoSignin.h>)
 #import <RNKakaoSignin/RNKakaoSignin.h>
@@ -11,6 +12,7 @@
 
 @interface RCT_EXTERN_MODULE(RNKakaoSignin, NSObject)
 
+// JavaScript 브리지 export
 RCT_EXTERN_METHOD(login:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(loginWithKakaoAccount:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(logout:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
@@ -26,6 +28,7 @@ RCT_EXTERN_METHOD(serviceTerms:(RCTPromiseResolveBlock)resolve reject:(RCTPromis
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wobjc-protocol-method-implementation"
 
+// New Architecture TurboModule 연결
 @interface RNKakaoSignin () <NativeRNKakaoSigninSpec>
 @end
 

@@ -9,12 +9,13 @@ class RNKakaoSignin: NSObject {
   private static var isConfigured = false
   private static let configurationQueue = DispatchQueue(label: "kr.packagekr.kakao.signin.configuration")
 
-  // SDK 초기화
+  // 모듈 초기화
   override init() {
     super.init()
     Self.configureKakaoSdkIfNeeded()
   }
 
+  // SDK 초기화
   @discardableResult
   private static func configureKakaoSdkIfNeeded() -> Bool {
     return configurationQueue.sync {
