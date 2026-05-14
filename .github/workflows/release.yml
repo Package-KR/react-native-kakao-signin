@@ -9,6 +9,10 @@ permissions:
   contents: write
   id-token: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -70,8 +74,8 @@ jobs:
         if: ${{ steps.release_type.outputs.release_type == '' }}
         run: echo "No releasable commits found."
 
-      # 계산된 타입에 맞춰 버전을 올리고, 릴리스 커밋과 태그를 생성하여 push합니다.
-      - name: Bump version and push
+      # 계산된 타입에 맞춰 버전을 올리고, publish 가능한 패키지인지 먼저 확인합니다.
+      - name: Bump version
         if: ${{ steps.release_type.outputs.release_type != '' }}
         id: version
         run: |
@@ -81,7 +85,21 @@ jobs:
 
           git add package.json package-lock.json
           git commit -m "chore(release): ${version} [skip ci]"
-          git tag -a "$version" -m "Release $version"
+
+      - name: Pack package
+        if: ${{ steps.release_type.outputs.release_type != '' }}
+        run: npm pack --dry-run
+
+      # Trusted Publishing을 이용해 npm 레지스트리에 먼저 배포합니다.
+      - name: Publish to npm
+        if: ${{ steps.release_type.outputs.release_type != '' }}
+        run: npm publish --access public --provenance
+
+      # npm publish 성공 후에만 태그와 GitHub 릴리스를 공개합니다.
+      - name: Push release commit and tag
+        if: ${{ steps.release_type.outputs.release_type != '' }}
+        run: |
+          git tag -a "${{ steps.version.outputs.version }}" -m "Release ${{ steps.version.outputs.version }}"
           git push origin HEAD:main --follow-tags
 
       # GitHub Releases 화면에 자동 생성 노트를 포함한 릴리스를 만듭니다.
@@ -90,8 +108,3 @@ jobs:
         run: gh release create "${{ steps.version.outputs.version }}" --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Trusted Publishing을 이용해 npm 레지스트리에 최종 배포합니다.
-      - name: Publish to npm
-        if: ${{ steps.release_type.outputs.release_type != '' }}
-        run: npm publish --access public --provenance
