@@ -2,8 +2,16 @@ import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { getProfile, isKakaoSigninError, login, logout } from '@package-kr/react-native-kakao-signin';
-import type { KakaoOAuthToken, KakaoProfile } from '@package-kr/react-native-kakao-signin';
+import {
+  getProfile,
+  isKakaoSigninError,
+  login,
+  logout,
+} from '@package-kr/react-native-kakao-signin';
+import type {
+  KakaoOAuthToken,
+  KakaoProfile,
+} from '@package-kr/react-native-kakao-signin';
 
 import { styles } from './login.styles';
 
@@ -58,6 +66,14 @@ const PROFILE_KEY_ORDER = [
   'legalGenderNeedsAgreement',
 ] as const satisfies readonly (keyof KakaoProfile)[];
 
+const RESPONSE_LABELS = {
+  token: '토큰',
+  profile: '프로필',
+  error: '오류',
+} as const;
+
+type ResponseType = keyof typeof RESPONSE_LABELS;
+
 function sortedStringify(data: unknown, keyOrder: readonly string[] = []): string {
   if (typeof data !== 'object' || data == null || Array.isArray(data)) {
     return JSON.stringify(data, null, 2);
@@ -109,7 +125,7 @@ function LoginScreen() {
   const [tokenText, setTokenText] = useState('');
   const [profileText, setProfileText] = useState('');
   const [responseText, setResponseText] = useState('');
-  const [responseType, setResponseType] = useState<'token' | 'profile'>('token');
+  const [responseType, setResponseType] = useState<ResponseType>('token');
 
   const handleLogin = async () => {
     try {
@@ -123,16 +139,16 @@ function LoginScreen() {
       setResponseType('token');
     } catch (error) {
       setResponseText(errorStringify(error));
+      setResponseType('error');
     }
   };
 
-  const handleToggleProfile = async () => {
-    if (responseType === 'profile') {
-      setResponseText(tokenText);
-      setResponseType('token');
-      return;
-    }
+  const handleShowToken = () => {
+    setResponseText(tokenText);
+    setResponseType('token');
+  };
 
+  const handleGetProfile = async () => {
     if (profileText) {
       setResponseText(profileText);
       setResponseType('profile');
@@ -148,6 +164,7 @@ function LoginScreen() {
       setResponseType('profile');
     } catch (error) {
       setResponseText(errorStringify(error));
+      setResponseType('error');
     }
   };
 
@@ -161,6 +178,7 @@ function LoginScreen() {
       setResponseType('token');
     } catch (error) {
       setResponseText(errorStringify(error));
+      setResponseType('error');
     }
   };
 
@@ -171,6 +189,7 @@ function LoginScreen() {
       </View>
 
       <View style={styles.responseBox}>
+        {responseText ? <Text style={styles.responseLabel}>{RESPONSE_LABELS[responseType]}</Text> : null}
         <ScrollView>
           <Text style={styles.responseText}>{responseText}</Text>
         </ScrollView>
@@ -183,9 +202,14 @@ function LoginScreen() {
           </TouchableOpacity>
         ) : (
           <>
-            <TouchableOpacity style={styles.profileButton} onPress={handleToggleProfile} activeOpacity={0.8}>
-              <Text style={styles.profileButtonText}>{responseType === 'profile' ? '토큰 조회' : '프로필 조회'}</Text>
-            </TouchableOpacity>
+            <View style={styles.apiButtons}>
+              <TouchableOpacity style={styles.apiButton} onPress={handleShowToken} activeOpacity={0.8}>
+                <Text style={styles.apiButtonText}>토큰</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.apiButton} onPress={handleGetProfile} activeOpacity={0.8}>
+                <Text style={styles.apiButtonText}>프로필</Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
               <Text style={styles.logoutButtonText}>로그아웃</Text>
             </TouchableOpacity>
