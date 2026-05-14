@@ -12,13 +12,15 @@
 React Native 전용 카카오 로그인 라이브러리 입니다.
 
 <p align="center">
-  <img src="./docs/images/ios-preview1.png" width="45%" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./docs/images/ios-preview2.png" width="45%" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./docs/images/android-preview1.png" width="40%" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./docs/images/android-preview2.png" width="40%" />
+  <img src="./docs/images/ios-preview1.png" width="44%" />
+  &nbsp;
+  <img src="./docs/images/ios-preview2.png" width="44%" />
+</p>
+
+<p align="center">
+  <img src="./docs/images/android-preview1.png" width="39%" />
+  &nbsp;
+  <img src="./docs/images/android-preview2.png" width="39%" />
 </p>
 
 </div>
