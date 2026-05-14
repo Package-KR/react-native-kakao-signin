@@ -6,21 +6,21 @@
 [![npm downloads](https://img.shields.io/npm/dm/@package-kr/react-native-kakao-signin)](https://www.npmjs.com/package/@package-kr/react-native-kakao-signin)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-![iOS](https://img.shields.io/badge/iOS-13%2B-black?logo=apple&logoColor=white&labelColor=000000)
 ![Android](https://img.shields.io/badge/Android-API%2024%2B-3DDC84?logo=android&logoColor=white&labelColor=3DDC84)
+![iOS](https://img.shields.io/badge/iOS-13%2B-black?logo=apple&logoColor=white&labelColor=000000)
 
 React Native 전용 카카오 로그인 라이브러리 입니다.
-
-<p align="center">
-  <img src="./docs/images/ios-preview1.png" width="44%" />
-  &nbsp;
-  <img src="./docs/images/ios-preview2.png" width="44%" />
-</p>
 
 <p align="center">
   <img src="./docs/images/android-preview1.png" width="39%" />
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="./docs/images/android-preview2.png" width="39%" />
+</p>
+
+<p align="center">
+  <img src="./docs/images/ios-preview1.png" width="44%" />
+  &nbsp;
+  <img src="./docs/images/ios-preview2.png" width="44%" />
 </p>
 
 </div>
@@ -44,6 +44,45 @@ npm install @package-kr/react-native-kakao-signin
 ```
 
 ## React Native CLI
+
+### Android
+
+#### 1. Redirect URI 설정
+
+`app/src/main/AndroidManifest.xml`에 카카오 리다이렉트 액티비티를 추가합니다.<br/>
+`{KAKAO_APP_KEY}` 부분을 카카오 네이티브 앱 키로 교체해주세요.
+앱 키에는 `kakao` 접두사를 붙이지 않고, `android:scheme`에만 `kakao{KAKAO_APP_KEY}` 형식으로 사용합니다.
+
+사용자 휴대폰에 카카오 앱이 설치되어 있을 경우 로그인 후 앱으로 돌아오기 위한 설정입니다.<br/>
+Android 12(API 31) 이상을 타깃하는 경우 `android:exported="true"` 를 반드시 선언해주셔야 합니다.
+
+```xml
+	  <!-- AndroidManifest.xml -->
+      <activity
+        android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:host="oauth" android:scheme="kakao{KAKAO_APP_KEY}" />
+        </intent-filter>
+      </activity>
+```
+
+#### 2. 카카오 앱 키 설정
+
+`app/src/main/res/values/strings.xml`에 카카오 앱 키를 추가합니다.<br/>
+카카오 SDK가 앱 키를 자동으로 읽어오기 위한 설정입니다.
+
+```diff
+  <resources>
+      <string name="app_name">YourAppName</string>
++     <string name="kakao_app_key">{KAKAO_APP_KEY}</string>
++     <!-- 선택 사항: 멀티 플랫폼 앱 구현이나 커스텀 URL scheme 사용 시에만 추가합니다. -->
++     <!-- <string name="kakao_custom_scheme">{CUSTOM_SCHEME}</string> -->
+  </resources>
+```
 
 ### iOS
 
@@ -142,45 +181,6 @@ func application(
 
 ```sh
 cd ios && pod install
-```
-
-### Android
-
-#### 1. Redirect URI 설정
-
-`app/src/main/AndroidManifest.xml`에 카카오 리다이렉트 액티비티를 추가합니다.<br/>
-`{KAKAO_APP_KEY}` 부분을 카카오 네이티브 앱 키로 교체해주세요.
-앱 키에는 `kakao` 접두사를 붙이지 않고, `android:scheme`에만 `kakao{KAKAO_APP_KEY}` 형식으로 사용합니다.
-
-사용자 휴대폰에 카카오 앱이 설치되어 있을 경우 로그인 후 앱으로 돌아오기 위한 설정입니다.<br/>
-Android 12(API 31) 이상을 타깃하는 경우 `android:exported="true"` 를 반드시 선언해주셔야 합니다.
-
-```xml
-	  <!-- AndroidManifest.xml -->
-      <activity
-        android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
-        android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:host="oauth" android:scheme="kakao{KAKAO_APP_KEY}" />
-        </intent-filter>
-      </activity>
-```
-
-#### 2. 카카오 앱 키 설정
-
-`app/src/main/res/values/strings.xml`에 카카오 앱 키를 추가합니다.<br/>
-카카오 SDK가 앱 키를 자동으로 읽어오기 위한 설정입니다.
-
-```diff
-  <resources>
-      <string name="app_name">YourAppName</string>
-+     <string name="kakao_app_key">{KAKAO_APP_KEY}</string>
-+     <!-- 선택 사항: 멀티 플랫폼 앱 구현이나 커스텀 URL scheme 사용 시에만 추가합니다. -->
-+     <!-- <string name="kakao_custom_scheme">{CUSTOM_SCHEME}</string> -->
-  </resources>
 ```
 
 ## Expo
