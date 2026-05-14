@@ -14,9 +14,11 @@ cd "$APP_DIR/example/RNKakaoSigninCliExample/android"
 
 # 빌드 폴더 삭제
 _wipe_build() {
-    [ -d "build" ] && rm -rf build
-    [ -d "app/build" ] && rm -rf app/build
-    [ -d ".gradle" ] && rm -rf .gradle
+    if [ -d "build" ]; then rm -rf build; fi
+    if [ -d "app/build" ]; then rm -rf app/build; fi
+    if [ -d ".gradle" ]; then rm -rf .gradle; fi
+    if [ -d "$APP_DIR/android/build" ]; then rm -rf "$APP_DIR/android/build"; fi
+    if [ -d "$APP_DIR/android/.gradle" ]; then rm -rf "$APP_DIR/android/.gradle"; fi
 }
 run_task "빌드 폴더 삭제" _wipe_build
 
