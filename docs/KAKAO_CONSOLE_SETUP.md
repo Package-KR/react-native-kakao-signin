@@ -19,13 +19,14 @@
 > [!NOTE]
 > 네이티브 앱 키가 [README](../README.md)의 `{KAKAO_APP_KEY}`에 들어갈 값입니다.
 
-![애플리케이션 추가](images/kakao-console//01-add-app.png)
+![애플리케이션 추가](images//01-add-app.png)
 
 ## Android 플랫폼 등록
 
-![애플리케이션 추가](images/kakao-console//04-android-platform.png)
+![애플리케이션 추가](images//04-android-platform.png)
 
 ### 1. 패키지명 입력
+
 `android/app/build.gradle` 에서 확인한 패키지명을 카카오 앱 설정에 등록합니다.
 
 ```groovy
@@ -39,6 +40,7 @@ android {
 ```
 
 ### 2. 키 해시 입력
+
 React Native `0.60.x` 부터는 프로젝트 생성 시 기본적으로 디버그 키스토어가 포함되어 있습니다.
 
 키 해시는 인증서의 지문 값을 해시한 것으로, 카카오 API 서버가 요청이 허용된 앱에서 온 것인지 검증하는 데 사용됩니다.<br/>
@@ -79,20 +81,22 @@ keytool -exportcert -alias {KEY_ALIAS} -keystore {KEYSTORE_PATH} | PATH_TO_OPENS
 ## iOS 플랫폼 등록
 
 ### 1. 번들 ID 확인 및 복사
+
 Xcode 프로젝트의 `Project/ios > TARGETS > Signing & Capabilities > Bundle Identifier` 에서 Bundle Id를 확인 및 복사를 해주세요.
 
 ### 2. 번들 ID 입력
+
 복사하신 번들 ID를 카카오 앱 설정에 등록합니다.
 
-![애플리케이션 추가](images/kakao-console//02-ios-platform.png)
-![애플리케이션 추가](images/kakao-console//03-ios-platform.png)
+![애플리케이션 추가](images//02-ios-platform.png)
+![애플리케이션 추가](images//03-ios-platform.png)
 
 ## 카카오 로그인 활성화
 
 1. 앱 대시보드 좌측 메뉴에서 **제품 설정 > 카카오 로그인**으로 이동합니다.
 2. **카카오 로그인 활성화** 토글을 **ON**으로 설정합니다.
 
-![애플리케이션 추가](images/kakao-console//05-login-on.png)
+![애플리케이션 추가](images//05-login-on.png)
 
 > [!WARNING]
 > 활성화하지 않으면 로그인 시도 시 오류가 발생합니다.
@@ -102,6 +106,6 @@ Xcode 프로젝트의 `Project/ios > TARGETS > Signing & Capabilities > Bundle I
 1. 앱 대시보드 좌측 메뉴에서 **제품 설정 > 카카오 로그인 > 동의항목**으로 이동합니다.
 2. 앱에서 수집할 항목을 설정합니다.
 
-![동의항목 설정](images/kakao-console//06-consent-list.png)
+![동의항목 설정](images//06-consent-list.png)
 
 설정이 완료되면 [README](../README.md)로 돌아가 네이티브 설정을 이어서 진행하세요.

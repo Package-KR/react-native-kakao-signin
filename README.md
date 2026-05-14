@@ -12,9 +12,13 @@
 React Native 전용 카카오 로그인 라이브러리 입니다.
 
 <p align="center">
-  <img src="./docs/images/kakao-console/preview1.png" width="45%" />
+  <img src="./docs/images/ios-preview1.png" width="45%" />
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./docs/images/kakao-console/preview2.png" width="45%" />
+  <img src="./docs/images/ios-preview2.png" width="45%" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./docs/images/android-preview1.png" width="45%" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./docs/images/android-preview2.png" width="45%" />
 </p>
 
 </div>
@@ -116,7 +120,7 @@ npm install @package-kr/react-native-kakao-signin
 
 ```swift
 import React
-import RNKakaoSignin // 상단에 추가
+import RNKakaoSignin
 
 // AppDelegate 클래스 안에 메서드 추가
 func application(
