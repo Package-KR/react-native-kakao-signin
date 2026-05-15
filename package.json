@@ -16,6 +16,7 @@
     "src",
     "ios",
     "android",
+    "docs",
     "plugin/build",
     "app.plugin.js",
     "*.podspec",
