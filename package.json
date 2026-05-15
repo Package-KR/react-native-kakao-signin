@@ -1,6 +1,6 @@
 {
   "name": "@package-kr/react-native-kakao-signin",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "React Native Kakao Signin",
   "main": "src/index",
   "types": "src/index.ts",
