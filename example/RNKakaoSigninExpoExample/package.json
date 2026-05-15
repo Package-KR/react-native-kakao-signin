@@ -24,10 +24,10 @@
     "react-native-web": "~0.21.2"
   },
   "devDependencies": {
-    "@types/react": "~19.1.0",
-    "eslint": "^9.25.0",
+    "@types/react": "~19.2.14",
+    "eslint": "^9.39.4",
     "eslint-config-expo": "~10.0.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.3"
   },
   "overrides": {
     "postcss": "8.5.14"
