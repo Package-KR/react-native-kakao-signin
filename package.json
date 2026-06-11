@@ -52,7 +52,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@expo/config-plugins": "^55.0.8",
+    "@expo/config-plugins": "^56.0.8",
     "@types/node": "^25.6.0",
     "typescript": "^6.0.3"
   },
