@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@package-kr/react-native-kakao-signin": "file:../..",
-    "expo": "54.0.33",
-    "expo-router": "~6.0.23",
+    "expo": "54.0.35",
+    "expo-router": "~6.0.24",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
