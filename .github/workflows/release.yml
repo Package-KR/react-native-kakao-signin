@@ -23,7 +23,7 @@ jobs:
     steps:
       # 릴리스 계산과 태그 생성을 위해 전체 git 히스토리를 가져옵니다.
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
