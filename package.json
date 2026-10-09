@@ -28,7 +28,7 @@
     "access": "public"
   },
   "overrides": {
-    "@xmldom/xmldom": "0.9.10",
+    "@xmldom/xmldom": "0.9.12",
     "uuid": "14.0.0"
   },
   "keywords": [
